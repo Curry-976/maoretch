@@ -230,7 +230,7 @@ export default function Phones() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="text-4xl mb-3"></div>
+            <div className="text-4xl mb-3">📱</div>
             <p className="text-muted-foreground">
               {search || filter !== "all" ? "Aucun téléphone trouvé" : "Aucun téléphone enregistré"}
             </p>
