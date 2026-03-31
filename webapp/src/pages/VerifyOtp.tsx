@@ -45,7 +45,7 @@ export default function VerifyOtp() {
           <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
             <Smartphone className="w-4 h-4 text-primary-foreground" />
           </div>
-          <h1 className="font-heading text-2xl text-foreground tracking-wider">PHONETRACK</h1>
+          <h1 className="font-heading text-2xl text-foreground tracking-wider">MAORETECH</h1>
         </div>
 
         <div>

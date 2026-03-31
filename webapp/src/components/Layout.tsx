@@ -30,7 +30,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <Smartphone className="w-4 h-4 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="font-heading text-xl text-sidebar-foreground tracking-wider">PHONETRACK</h1>
+              <h1 className="font-heading text-xl text-sidebar-foreground tracking-wider">MAORETECH</h1>
               <p className="text-xs text-muted-foreground">Gestion de revente</p>
             </div>
           </div>
@@ -81,7 +81,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="w-7 h-7 bg-primary rounded-md flex items-center justify-center">
             <Smartphone className="w-3.5 h-3.5 text-primary-foreground" />
           </div>
-          <h1 className="font-heading text-lg text-foreground tracking-wider">PHONETRACK</h1>
+          <h1 className="font-heading text-lg text-foreground tracking-wider">MAORETECH</h1>
         </div>
         <button onClick={() => setMobileOpen(!mobileOpen)} className="text-foreground">
           {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

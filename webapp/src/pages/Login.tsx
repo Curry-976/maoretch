@@ -41,7 +41,7 @@ export default function Login() {
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
               <Smartphone className="w-5 h-5 text-primary-foreground" />
             </div>
-            <h1 className="font-heading text-3xl text-foreground tracking-wider">PHONETRACK</h1>
+            <h1 className="font-heading text-3xl text-foreground tracking-wider">MAORETECH</h1>
           </div>
         </div>
         <div className="relative space-y-4">
@@ -74,7 +74,7 @@ export default function Login() {
             <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
               <Smartphone className="w-4 h-4 text-primary-foreground" />
             </div>
-            <h1 className="font-heading text-2xl text-foreground tracking-wider">PHONETRACK</h1>
+            <h1 className="font-heading text-2xl text-foreground tracking-wider">MAORETECH</h1>
           </div>
 
           <div>
