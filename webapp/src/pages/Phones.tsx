@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Search, Trash2, CheckCircle, ShoppingCart, TrendingUp, TrendingDown, ChevronDown } from "lucide-react";
 
 function formatCurrency(n: number) {
-  return new Intl.NumberFormat("fr-FR").format(n) + " FCFA";
+  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
 }
 
 function conditionColor(condition: string) {

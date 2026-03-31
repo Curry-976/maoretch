@@ -258,17 +258,17 @@ export default function AddPhone() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Prix d'achat (FCFA) *</label>
+                <label className="text-sm font-medium text-foreground">Prix d'achat (€) *</label>
                 <input type="number" value={purchasePrice} onChange={(e) => setPurchasePrice(e.target.value)} placeholder="0" min="0" required
                   className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Prix réparation (FCFA)</label>
+                <label className="text-sm font-medium text-foreground">Prix réparation (€)</label>
                 <input type="number" value={repairPrice} onChange={(e) => setRepairPrice(e.target.value)} placeholder="0" min="0"
                   className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Prix de revente (FCFA) *</label>
+                <label className="text-sm font-medium text-foreground">Prix de revente (€) *</label>
                 <input type="number" value={resalePrice} onChange={(e) => setResalePrice(e.target.value)} placeholder="0" min="0" required
                   className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
               </div>
@@ -280,7 +280,7 @@ export default function AddPhone() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-foreground">Marge estimée</span>
                   <span className={`text-lg font-bold ${margin >= 0 ? "text-green-400" : "text-destructive"}`}>
-                    {margin >= 0 ? "+" : ""}{new Intl.NumberFormat("fr-FR").format(margin)} FCFA
+                    {margin >= 0 ? "+" : ""}{new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(margin)}
                   </span>
                 </div>
                 {margin < 0 && <p className="text-xs text-destructive/70 mt-1">Attention : prix de revente inférieur au coût total</p>}
