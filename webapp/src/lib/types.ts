@@ -3,6 +3,10 @@ export interface Seller {
   firstName: string;
   lastName: string;
   village: string;
+  email: string | null;
+  phone: string | null;
+  signatureDataUrl: string | null;
+  contractSignedAt: string | null;
   createdAt: string;
 }
 
@@ -17,6 +21,22 @@ export interface Phone {
   status: "for_sale" | "sold";
   sellerId: string;
   seller: Seller;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ClientStatus = "pending" | "verified";
+
+export interface Client {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phone: string | null;
+  village: string | null;
+  status: ClientStatus;
+  notes: string | null;
+  verifiedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -5,7 +5,8 @@ import { api } from "@/lib/api";
 import { Seller, Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { toast } from "sonner";
-import { Camera, User, Smartphone, DollarSign, ChevronDown, Loader2, X, Check, Plus } from "lucide-react";
+import { Camera, User, Smartphone, DollarSign, ChevronDown, Loader2, X, Check, Plus, FileSignature, Mail, Phone as PhoneIcon } from "lucide-react";
+import { SignaturePad } from "@/components/SignaturePad";
 
 const CONDITIONS = [
   { value: "Neuf", label: "Neuf" },
@@ -28,6 +29,10 @@ export default function AddPhone() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [village, setVillage] = useState("");
+  const [email, setEmail] = useState("");
+  const [sellerPhone, setSellerPhone] = useState("");
+  const [signature, setSignature] = useState<string | null>(null);
+  const [contractAccepted, setContractAccepted] = useState(false);
 
   // Phone fields
   const [model, setModel] = useState("");
@@ -46,7 +51,14 @@ export default function AddPhone() {
     mutationFn: async () => {
       let sellerId = selectedSellerId;
       if (sellerMode === "new") {
-        const seller = await api.post<Seller>("/api/sellers", { firstName, lastName, village });
+        const seller = await api.post<Seller>("/api/sellers", {
+          firstName,
+          lastName,
+          village,
+          email: email.trim() || undefined,
+          phone: sellerPhone.trim() || undefined,
+          signatureDataUrl: signature || undefined,
+        });
         sellerId = seller.id;
       }
       return api.post<Phone>("/api/phones", {
@@ -99,9 +111,23 @@ export default function AddPhone() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (sellerMode === "new" && (!firstName || !lastName || !village)) {
-      toast.error("Veuillez remplir les informations du vendeur");
-      return;
+    if (sellerMode === "new") {
+      if (!firstName || !lastName || !village) {
+        toast.error("Prénom, nom et village sont requis");
+        return;
+      }
+      if (!email.trim() || !sellerPhone.trim()) {
+        toast.error("Email et téléphone du vendeur sont requis");
+        return;
+      }
+      if (!contractAccepted) {
+        toast.error("Le vendeur doit accepter le contrat");
+        return;
+      }
+      if (!signature) {
+        toast.error("La signature du vendeur est requise");
+        return;
+      }
     }
     if (sellerMode === "existing" && !selectedSellerId) {
       toast.error("Veuillez sélectionner un vendeur");
@@ -171,23 +197,78 @@ export default function AddPhone() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Prénom *</label>
-                  <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Jean"
-                    className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Prénom *</label>
+                    <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Jean"
+                      className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Nom *</label>
+                    <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Dupont"
+                      className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <label className="text-sm font-medium text-foreground">Village *</label>
+                    <input type="text" value={village} onChange={(e) => setVillage(e.target.value)} placeholder="Conakry"
+                      className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                      <Mail className="w-3.5 h-3.5" /> Email *
+                    </label>
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vendeur@exemple.com"
+                      className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                      <PhoneIcon className="w-3.5 h-3.5" /> Téléphone *
+                    </label>
+                    <input type="tel" value={sellerPhone} onChange={(e) => setSellerPhone(e.target.value)} placeholder="+224 6XX XX XX XX"
+                      className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Nom *</label>
-                  <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Dupont"
-                    className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
+
+                {/* Contract + signature */}
+                <div className="space-y-3 pt-2 border-t border-border">
+                  <div className="flex items-center gap-2">
+                    <FileSignature className="w-4 h-4 text-primary" />
+                    <h3 className="font-medium text-foreground">Contrat de cession</h3>
+                  </div>
+                  <div className="bg-background border border-border rounded-lg p-4 max-h-40 overflow-y-auto text-xs text-muted-foreground leading-relaxed space-y-2">
+                    <p>
+                      Le vendeur soussigné, <strong className="text-foreground">{firstName || "[Prénom]"} {lastName || "[Nom]"}</strong>,
+                      domicilié à <strong className="text-foreground">{village || "[Village]"}</strong>, joignable au{" "}
+                      <strong className="text-foreground">{sellerPhone || "[téléphone]"}</strong>
+                      {email ? <> et à l'adresse <strong className="text-foreground">{email}</strong></> : null},
+                      déclare céder à <strong className="text-foreground">Maore-Tech</strong> le ou les téléphones
+                      mobiles décrits dans le présent enregistrement, en pleine propriété, libres de tout gage et de
+                      toute opposition.
+                    </p>
+                    <p>
+                      Le vendeur certifie être le propriétaire légitime des appareils et garantit Maore-Tech contre
+                      tout recours d'un tiers. Le prix convenu est celui inscrit ci-dessous, et son règlement vaut
+                      transfert immédiat de propriété. Toute fausse déclaration engage la responsabilité du vendeur.
+                    </p>
+                  </div>
+
+                  <label className="flex items-start gap-2 text-sm text-foreground cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={contractAccepted}
+                      onChange={(e) => setContractAccepted(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded border-border accent-primary"
+                    />
+                    <span>Le vendeur a lu et accepte les termes du contrat ci-dessus.</span>
+                  </label>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Signature du vendeur *</label>
+                    <SignaturePad value={signature} onChange={setSignature} />
+                  </div>
                 </div>
-                <div className="space-y-2 sm:col-span-2">
-                  <label className="text-sm font-medium text-foreground">Village *</label>
-                  <input type="text" value={village} onChange={(e) => setVillage(e.target.value)} placeholder="Conakry"
-                    className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
-                </div>
-              </div>
+              </>
             )}
           </div>
 

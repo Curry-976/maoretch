@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authClient } from "@/lib/auth-client";
-import { Smartphone, ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
+import { BrandLogo } from "@/components/Brand";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -35,13 +36,10 @@ export default function Login() {
     <div className="min-h-screen bg-background flex">
       {/* Left visual */}
       <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-primary/20 via-background to-background flex-col justify-between p-12 border-r border-border relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(245,158,11,0.15),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(213_78%_48%/0.18),transparent_60%)]" />
         <div className="relative">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <Smartphone className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <h1 className="font-heading text-3xl text-foreground tracking-wider">MAORETECH</h1>
+          <div className="inline-flex items-center bg-white/95 rounded-2xl px-5 py-4 shadow-2xl">
+            <BrandLogo size="lg" />
           </div>
         </div>
         <div className="relative space-y-4">
@@ -70,11 +68,8 @@ export default function Login() {
       {/* Right form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-sm space-y-8">
-          <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
-              <Smartphone className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <h1 className="font-heading text-2xl text-foreground tracking-wider">MAORETECH</h1>
+          <div className="lg:hidden mb-8 inline-flex items-center bg-white/95 rounded-xl px-4 py-3 shadow-lg">
+            <BrandLogo size="md" />
           </div>
 
           <div>

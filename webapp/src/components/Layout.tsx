@@ -1,12 +1,14 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Smartphone, PlusCircle, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Smartphone, PlusCircle, LogOut, Menu, X, Users } from "lucide-react";
 import { useState } from "react";
 import { signOut, useSession } from "@/lib/auth-client";
+import { BrandLogo } from "@/components/Brand";
 
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { path: "/add-phone", label: "Ajouter Téléphone", icon: PlusCircle },
   { path: "/phones", label: "Gestion Téléphones", icon: Smartphone },
+  { path: "/clients", label: "Clients", icon: Users },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -25,15 +27,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Sidebar - desktop */}
       <aside className="hidden md:flex w-64 flex-col bg-sidebar border-r border-sidebar-border">
         <div className="p-6 border-b border-sidebar-border">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Smartphone className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="font-heading text-xl text-sidebar-foreground tracking-wider">MAORETECH</h1>
-              <p className="text-xs text-muted-foreground">Gestion de revente</p>
-            </div>
-          </div>
+          <Link to="/dashboard" className="flex items-center justify-center bg-white/95 rounded-xl px-3 py-4 shadow-lg">
+            <BrandLogo size="md" />
+          </Link>
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mt-3 text-center">
+            CRM · Gestion de revente
+          </p>
         </div>
 
         <nav className="flex-1 p-4 space-y-1">
@@ -77,11 +76,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-sidebar border-b border-sidebar-border px-4 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-primary rounded-md flex items-center justify-center">
-            <Smartphone className="w-3.5 h-3.5 text-primary-foreground" />
-          </div>
-          <h1 className="font-heading text-lg text-foreground tracking-wider">MAORETECH</h1>
+        <div className="flex items-center gap-2 bg-white/95 rounded-md px-2 py-1">
+          <BrandLogo size="sm" />
         </div>
         <button onClick={() => setMobileOpen(!mobileOpen)} className="text-foreground">
           {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

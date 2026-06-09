@@ -15,7 +15,7 @@
     --popover: 220 15% 11%;
     --popover-foreground: 40 20% 95%;
 
-    --primary: 38 95% 55%;
+    --primary: 213 78% 48%;
     --primary-foreground: 220 15% 8%;
 
     --secondary: 220 15% 16%;
@@ -24,7 +24,7 @@
     --muted: 220 15% 16%;
     --muted-foreground: 220 10% 50%;
 
-    --accent: 38 95% 55%;
+    --accent: 213 78% 48%;
     --accent-foreground: 220 15% 8%;
 
     --destructive: 0 72% 51%;
@@ -32,22 +32,22 @@
 
     --border: 220 15% 18%;
     --input: 220 15% 16%;
-    --ring: 38 95% 55%;
+    --ring: 213 78% 48%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 220 15% 6%;
     --sidebar-foreground: 40 20% 85%;
-    --sidebar-primary: 38 95% 55%;
+    --sidebar-primary: 213 78% 48%;
     --sidebar-primary-foreground: 220 15% 8%;
     --sidebar-accent: 220 15% 14%;
     --sidebar-accent-foreground: 40 20% 95%;
     --sidebar-border: 220 15% 14%;
-    --sidebar-ring: 38 95% 55%;
+    --sidebar-ring: 213 78% 48%;
 
     --success: 142 71% 45%;
     --success-foreground: 0 0% 98%;
-    --warning: 38 95% 55%;
+    --warning: 213 78% 48%;
     --warning-foreground: 220 15% 8%;
   }
 }
@@ -83,6 +83,10 @@
   }
 
   .gold-glow {
-    box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+    box-shadow: 0 0 24px hsl(213 78% 48% / 0.25);
+  }
+
+  .brand-glow {
+    box-shadow: 0 0 24px hsl(213 78% 48% / 0.25);
   }
 }

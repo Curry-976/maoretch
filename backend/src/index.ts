@@ -8,6 +8,7 @@ import { auth } from "./auth";
 import { sellersRouter } from "./routes/sellers";
 import { phonesRouter } from "./routes/phones";
 import { dashboardRouter } from "./routes/dashboard";
+import { clientsRouter } from "./routes/clients";
 
 const app = new Hono<{
   Variables: {
@@ -56,6 +57,7 @@ app.get("/api/health", (c) => c.json({ data: { ok: true } }));
 app.route("/api/sellers", sellersRouter);
 app.route("/api/phones", phonesRouter);
 app.route("/api/dashboard", dashboardRouter);
+app.route("/api/clients", clientsRouter);
 
 // Static webapp (Vite output is copied into ./public by the build step).
 // SPA fallback: anything not matched above serves index.html.

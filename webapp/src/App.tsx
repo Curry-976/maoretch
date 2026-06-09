@@ -10,6 +10,7 @@ import VerifyOtp from "@/pages/VerifyOtp";
 import Dashboard from "@/pages/Dashboard";
 import AddPhone from "@/pages/AddPhone";
 import Phones from "@/pages/Phones";
+import Clients from "@/pages/Clients";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/add-phone" element={<ProtectedRoute><AddPhone /></ProtectedRoute>} />
           <Route path="/phones" element={<ProtectedRoute><Phones /></ProtectedRoute>} />
+          <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
