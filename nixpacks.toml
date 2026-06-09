@@ -1,0 +1,13 @@
+# Nixpacks config for Railway — tells the builder to use Bun and run our scripts.
+
+[phases.setup]
+nixPkgs = ["bun", "openssl"]
+
+[phases.install]
+cmds = ["bun install --cwd backend", "bun install --cwd webapp"]
+
+[phases.build]
+cmds = ["bun run build"]
+
+[start]
+cmd = "bun run start"

@@ -1,19 +1,19 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import { vibecodePlugin } from "@vibecodeapp/webapp/plugin";
 import path from "path";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(() => ({
   server: {
     host: "::",
     port: 8000,
-    allowedHosts: true, // Allow all hosts
+    allowedHosts: true,
+    proxy: {
+      "/api": { target: "http://localhost:3000", changeOrigin: true, secure: false },
+    },
   },
-  plugins: [
-    react(),
-    mode === "development" && vibecodePlugin(),
-  ].filter(Boolean),
+  build: { outDir: "dist", sourcemap: false },
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

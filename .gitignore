@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+dist
+backend/public
+**/.env
+**/.env.local
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+.DS_Store
+.vscode
+.idea

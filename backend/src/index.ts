@@ -1,8 +1,9 @@
-import "@vibecodeapp/proxy"; // DO NOT REMOVE OTHERWISE VIBECODE PROXY WILL NOT WORK
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import { serveStatic } from "hono/bun";
 import "./env";
+import { env } from "./env";
 import { auth } from "./auth";
 import { sellersRouter } from "./routes/sellers";
 import { phonesRouter } from "./routes/phones";
@@ -15,15 +16,10 @@ const app = new Hono<{
   };
 }>();
 
-// CORS middleware
+// CORS — same-origin in prod (backend serves the webapp). Only dev origins are allowed.
 const allowed = [
   /^http:\/\/localhost(:\d+)?$/,
   /^http:\/\/127\.0\.0\.1(:\d+)?$/,
-  /^https:\/\/[a-z0-9-]+\.dev\.vibecode\.run$/,
-  /^https:\/\/[a-z0-9-]+\.vibecode\.run$/,
-  /^https:\/\/[a-z0-9-]+\.vibecodeapp\.com$/,
-  /^https:\/\/[a-z0-9-]+\.vibecode\.dev$/,
-  /^https:\/\/vibecode\.dev$/,
 ];
 
 app.use(
@@ -31,12 +27,12 @@ app.use(
   cors({
     origin: (origin) => (origin && allowed.some((re) => re.test(origin)) ? origin : null),
     credentials: true,
-  })
+  }),
 );
 
 app.use("*", logger());
 
-// Auth middleware
+// Attach session to context
 app.use("*", async (c, next) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
   if (!session) {
@@ -50,16 +46,22 @@ app.use("*", async (c, next) => {
   await next();
 });
 
-// Mount auth handler
+// Better Auth catch-all
 app.on(["GET", "POST"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
 // Health check
-app.get("/health", (c) => c.json({ status: "ok" }));
+app.get("/api/health", (c) => c.json({ data: { ok: true } }));
 
 // API routes
 app.route("/api/sellers", sellersRouter);
 app.route("/api/phones", phonesRouter);
 app.route("/api/dashboard", dashboardRouter);
+
+// Static webapp (Vite output is copied into ./public by the build step).
+// SPA fallback: anything not matched above serves index.html.
+const webappDir = env.WEBAPP_DIST_DIR || "./public";
+app.use("/*", serveStatic({ root: webappDir }));
+app.get("*", serveStatic({ path: `${webappDir}/index.html` }));
 
 const port = Number(process.env.PORT) || 3000;
 

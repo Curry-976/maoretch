@@ -6,6 +6,9 @@ const envSchema = z.object({
   DATABASE_URL: z.string().default("file:./prisma/dev.db"),
   BETTER_AUTH_SECRET: z.string().min(1, "BETTER_AUTH_SECRET is required"),
   BACKEND_URL: z.string().default("http://localhost:3000"),
+  RESEND_API_KEY: z.string().optional(),
+  RESEND_FROM: z.string().optional(),
+  WEBAPP_DIST_DIR: z.string().optional(),
 });
 
 function validateEnv() {
