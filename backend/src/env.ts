@@ -29,6 +29,15 @@ function validateEnv() {
 }
 
 export const env = validateEnv();
+
+// Propagate any zod-applied defaults back to process.env so that other tools
+// (e.g. Prisma, which reads process.env directly) pick them up too.
+for (const [key, value] of Object.entries(env)) {
+  if (value !== undefined && process.env[key] === undefined) {
+    process.env[key] = String(value);
+  }
+}
+
 export type Env = z.infer<typeof envSchema>;
 
 declare global {
