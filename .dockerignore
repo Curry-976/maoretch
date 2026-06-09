@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+.git
+.claude
+.env
+**/.env
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+dist
+backend/public
+.vscode
+.idea
