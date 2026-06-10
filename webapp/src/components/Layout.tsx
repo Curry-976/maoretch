@@ -1,6 +1,7 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Smartphone, PlusCircle, LogOut, Menu, X, Users } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { LayoutDashboard, Smartphone, PlusCircle, LogOut, Menu, X, Users, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { signOut, useSession } from "@/lib/auth-client";
 import { BrandLogo } from "@/components/Brand";
 
@@ -13,13 +14,31 @@ const navItems = [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  const navigate = useNavigate();
   const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate("/login");
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            // Hard reload clears React Query cache and any stale session state.
+            window.location.href = "/login";
+          },
+          onError: (ctx: { error?: { message?: string } }) => {
+            toast.error(ctx.error?.message || "Échec de la déconnexion");
+            setSigningOut(false);
+          },
+        },
+      });
+    } catch (err) {
+      console.error("[signOut]", err);
+      toast.error("Échec de la déconnexion");
+      setSigningOut(false);
+    }
   };
 
   return (
@@ -66,10 +85,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
+            disabled={signingOut}
+            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all disabled:opacity-50 disabled:cursor-wait"
           >
-            <LogOut className="w-4 h-4" />
-            Déconnexion
+            {signingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+            {signingOut ? "Déconnexion..." : "Déconnexion"}
           </button>
         </div>
       </aside>
@@ -106,10 +126,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             })}
             <button
               onClick={handleSignOut}
-              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-destructive rounded-lg"
+              disabled={signingOut}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-destructive rounded-lg disabled:opacity-50 disabled:cursor-wait"
             >
-              <LogOut className="w-4 h-4" />
-              Déconnexion
+              {signingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+              {signingOut ? "Déconnexion..." : "Déconnexion"}
             </button>
           </div>
         </div>
