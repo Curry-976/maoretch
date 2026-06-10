@@ -25,7 +25,6 @@ import {
 import { api } from "@/lib/api";
 import { Client, DashboardStats, Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
-import { PageHeader } from "@/components/ui/page-header";
 
 function eur(amount: number) {
   return new Intl.NumberFormat("fr-FR", {
@@ -33,6 +32,16 @@ function eur(amount: number) {
     currency: "EUR",
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+function bigMoney(amount: number) {
+  if (!amount) return "—";
+  return eur(amount);
+}
+
+function bigCount(n: number) {
+  if (!n) return "—";
+  return String(n);
 }
 
 const tooltipStyle: React.CSSProperties = {
@@ -84,31 +93,47 @@ export default function Dashboard() {
   const verifiedClients = clients.filter((c) => c.status === "verified").length;
   const isEmpty = (stats?.totalPhones ?? 0) === 0;
 
-  const today = new Date().toLocaleDateString("fr-FR", {
-    weekday: "long",
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  const now = new Date();
+  const dayName = now.toLocaleDateString("fr-FR", { weekday: "long" });
+  const dayNum = now.toLocaleDateString("fr-FR", { day: "2-digit" });
+  const monthName = now.toLocaleDateString("fr-FR", { month: "long" });
+  const yearNum = now.getFullYear();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? "Bonjour" : hour < 18 ? "Bon après-midi" : "Bonsoir";
 
   return (
     <Layout>
       <div className="px-6 md:px-10 py-8 md:py-12 space-y-12 max-w-[1400px]">
-        <PageHeader
-          eyebrow={today}
-          title="Tableau de bord,"
-          italic="vue d'ensemble"
-          subline="Le pouls de votre activité — chiffre d'affaires, marges, inventaire, clients. Tout est synchronisé en temps réel."
-          actions={
-            <Link
-              to="/add-phone"
-              className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary"
-            >
-              <Plus className="w-3.5 h-3.5" strokeWidth={2} />
-              Ajouter un téléphone
-            </Link>
-          }
-        />
+        {/* === DATE HERO — no editorial period, no italic-bold mash === */}
+        <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-8 border-b hairline-border">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-medium">
+              <span className="inline-flex items-center gap-2">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-success/60 animate-ping" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success" />
+                </span>
+                En direct
+              </span>
+              <span className="text-muted-foreground/40">·</span>
+              <span>{greeting}, Fahel</span>
+            </div>
+            <h1 className="font-display text-[clamp(3rem,5.5vw,4.4rem)] leading-[0.96] text-foreground tracking-tightest">
+              <span className="capitalize">{dayName}</span>{" "}
+              <span className="font-italic font-normal text-foreground/85">
+                {dayNum} {monthName}
+              </span>{" "}
+              <span className="text-muted-foreground/50 tabular text-[0.6em] align-top">{yearNum}</span>
+            </h1>
+          </div>
+          <Link
+            to="/add-phone"
+            className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary self-start md:self-end"
+          >
+            <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+            Ajouter un téléphone
+          </Link>
+        </header>
 
         {/* === HERO ROW : 2 big cards === */}
         <section className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-5">
@@ -137,7 +162,7 @@ export default function Dashboard() {
               </div>
 
               <div className="font-display tabular text-[clamp(3.4rem,6vw,5.5rem)] leading-none tracking-tightest text-foreground">
-                {eur(stats?.totalRevenue ?? 0)}
+                {bigMoney(stats?.totalRevenue ?? 0)}
               </div>
 
               <div className="flex items-center gap-4 text-sm">
@@ -212,7 +237,7 @@ export default function Dashboard() {
               </div>
 
               <div className="font-display tabular text-[clamp(2.6rem,4vw,3.6rem)] leading-none tracking-tightest text-ink-foreground">
-                {eur(stats?.totalInventoryValue ?? 0)}
+                {bigMoney(stats?.totalInventoryValue ?? 0)}
               </div>
 
               <div className="space-y-3 pt-2 border-t border-sidebar-border">
@@ -229,7 +254,7 @@ export default function Dashboard() {
           <Tile
             icon={<Smartphone className="w-3.5 h-3.5" />}
             label="Téléphones"
-            value={String(stats?.totalPhones ?? 0)}
+            value={bigCount(stats?.totalPhones ?? 0)}
             sub={`${stats?.forSaleCount ?? 0} en vente`}
             href="/phones"
           />

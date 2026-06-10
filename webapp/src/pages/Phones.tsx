@@ -15,8 +15,23 @@ import {
 import { api } from "@/lib/api";
 import { Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
-import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
+
+function Datum({ value, label, wide = false }: { value: number | string; label: string; wide?: boolean }) {
+  const display = typeof value === "number" ? (value === 0 ? "—" : String(value)) : value;
+  return (
+    <div className="flex items-baseline gap-1.5">
+      <span className={`font-display tabular leading-none ${wide ? "text-3xl" : "text-3xl"} text-foreground tracking-tightest`}>
+        {display}
+      </span>
+      <span className="text-[12px] text-muted-foreground">{label}</span>
+    </div>
+  );
+}
+
+function Sep() {
+  return <span className="text-muted-foreground/30 select-none">·</span>;
+}
 
 function eur(n: number) {
   return new Intl.NumberFormat("fr-FR", {
@@ -87,26 +102,35 @@ export default function Phones() {
 
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-8 md:py-12 space-y-10 max-w-[1400px]">
-        <PageHeader
-          eyebrow={stats.total > 0 ? `${stats.total} téléphone${stats.total > 1 ? "s" : ""}` : "Inventaire"}
-          title="Tous les"
-          italic="téléphones"
-          subline={
-            stats.total > 0
-              ? `${stats.forSale} en vente, ${stats.sold} vendus. ${eur(stats.revenue)} de chiffre d'affaires généré.`
-              : "Quand un téléphone passe ici, c'est qu'il a été acheté à un vendeur. Sa vie démarre ce jour-là."
-          }
-          actions={
-            <Link
-              to="/add-phone"
-              className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary"
-            >
-              <Plus className="w-3.5 h-3.5" strokeWidth={2} />
-              Nouveau téléphone
-            </Link>
-          }
-        />
+      <div className="px-6 md:px-10 py-8 md:py-12 space-y-8 max-w-[1400px]">
+        {/* Inline metadata header — looks like a ledger top-row */}
+        <header className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 pb-6 border-b hairline-border">
+          <div className="space-y-3">
+            <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-medium">
+              Inventaire
+            </div>
+            <div className="flex items-baseline gap-x-6 gap-y-3 flex-wrap">
+              <Datum value={stats.total} label="appareils" />
+              <Sep />
+              <Datum value={stats.forSale} label="en vente" />
+              <Sep />
+              <Datum value={stats.sold} label="vendus" />
+              <Sep />
+              <Datum
+                value={stats.revenue ? eur(stats.revenue) : "—"}
+                label="générés"
+                wide
+              />
+            </div>
+          </div>
+          <Link
+            to="/add-phone"
+            className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary self-start"
+          >
+            <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+            Nouveau téléphone
+          </Link>
+        </header>
 
         {/* Toolbar */}
         {phones.length > 0 && (

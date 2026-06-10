@@ -83,11 +83,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="paper-tile rounded-md p-3 flex items-center justify-center brand-glow">
               <BrandLogo size="md" />
             </div>
-            <div className="mt-3 flex items-baseline gap-2 px-0.5">
-              <span className="font-display text-[10px] tracking-[0.16em] text-ink-foreground uppercase">
+            <div className="mt-3 px-0.5 flex items-center justify-between">
+              <span className="font-display text-[10px] tracking-[0.16em] text-ink-foreground/70 uppercase">
                 Maore-Tech
               </span>
-              <span className="text-[9px] text-ink-foreground/40 tabular">CRM v1.0</span>
+              <span className="text-[9px] text-ink-foreground/30 uppercase tracking-[0.16em]">
+                CRM
+              </span>
             </div>
           </Link>
         </div>

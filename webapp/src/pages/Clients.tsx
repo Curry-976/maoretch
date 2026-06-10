@@ -14,12 +14,10 @@ import {
   CheckCircle2,
   Clock,
   StickyNote,
-  Filter,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Client, ClientStatus } from "@/lib/types";
 import { Layout } from "@/components/Layout";
-import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 
 type Tab = "all" | "verified" | "pending";
@@ -88,30 +86,53 @@ export default function Clients() {
 
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-8 md:py-12 space-y-10 max-w-[1400px]">
-        <PageHeader
-          eyebrow={counts.all > 0 ? `${counts.all} contact${counts.all > 1 ? "s" : ""}` : "CRM"}
-          title="Vos"
-          italic="clients"
-          subline={
-            counts.all > 0
-              ? `${counts.verified} démarchés et validés, ${counts.pending} en attente de retour.`
-              : "Un client vérifié est quelqu'un que vous avez démarché et qui a validé. Les autres restent en attente."
-          }
-          actions={
-            <button
-              onClick={() => setOpenCreate(true)}
-              className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary"
-            >
-              <Plus className="w-3.5 h-3.5" strokeWidth={2} />
-              Nouveau client
-            </button>
-          }
-        />
+      <div className="px-6 md:px-10 py-8 md:py-12 space-y-8 max-w-[1400px]">
+        {/* Tabs-as-title: the segmented control IS the H1 */}
+        <header className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 pb-6 border-b hairline-border">
+          <div className="space-y-3">
+            <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-medium">
+              Carnet de clients
+            </div>
+            <nav className="flex items-baseline gap-x-8 gap-y-2 flex-wrap" role="tablist">
+              {TABS.map((t) => {
+                const active = tab === t.key;
+                const count = counts[t.key];
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => setTab(t.key)}
+                    role="tab"
+                    aria-selected={active}
+                    className={`group relative pb-2 transition-colors ${
+                      active ? "text-foreground" : "text-foreground/35 hover:text-foreground/70"
+                    }`}
+                  >
+                    <span className="flex items-baseline gap-2">
+                      <span className="font-display tabular text-[clamp(1.8rem,3vw,2.6rem)] leading-none tracking-tightest">
+                        {count || "—"}
+                      </span>
+                      <span className="text-[14px] font-medium">{t.label}</span>
+                    </span>
+                    {active && (
+                      <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-foreground" />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+          <button
+            onClick={() => setOpenCreate(true)}
+            className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary self-start"
+          >
+            <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+            Nouveau client
+          </button>
+        </header>
 
-        {/* Toolbar */}
+        {/* Toolbar — search only (tabs are now in the header) */}
         {counts.all > 0 && (
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex gap-3">
             <div className="relative flex-1 max-w-md">
               <Search
                 strokeWidth={1.8}
@@ -124,17 +145,12 @@ export default function Clients() {
                 className="w-full pl-10 pr-4 py-3 bg-card border hairline-border rounded-md text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all"
               />
             </div>
-            <div className="inline-flex items-center gap-0.5 p-1 bg-secondary/50 border hairline-border rounded-md">
-              <Filter className="w-3.5 h-3.5 text-muted-foreground mx-2" strokeWidth={1.5} />
+            <div className="hidden">
               {TABS.map((t) => (
                 <button
                   key={t.key}
                   onClick={() => setTab(t.key)}
-                  className={`px-3 py-1.5 rounded text-[12px] font-medium transition-all duration-300 ease-out-expo ${
-                    tab === t.key
-                      ? "ink-surface shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  className="hidden"
                 >
                   {t.label}
                   <span className="ml-1 opacity-50 tabular">({counts[t.key]})</span>

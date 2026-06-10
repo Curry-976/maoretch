@@ -14,7 +14,6 @@ import {
 import { api } from "@/lib/api";
 import { Seller, Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
-import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 
 function eur(n: number) {
@@ -75,21 +74,37 @@ export default function Sellers() {
   return (
     <Layout>
       <div className="px-6 md:px-10 py-8 md:py-12 space-y-10 max-w-[1400px]">
-        <PageHeader
-          eyebrow={`${stats.total} vendeur${stats.total > 1 ? "s" : ""}`}
-          title="Vos"
-          italic="vendeurs"
-          subline="Les personnes qui vous cèdent des téléphones. Chacun a son historique, son village d'origine, et — pour les nouveaux — un contrat signé numériquement."
-          actions={
-            <Link
-              to="/add-phone"
-              className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary"
-            >
-              <Plus className="w-3.5 h-3.5" strokeWidth={2} />
-              Nouveau vendeur (via téléphone)
-            </Link>
-          }
-        />
+        {/* Data-as-title — the sentence IS the headline */}
+        <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-8 border-b hairline-border">
+          <div className="space-y-4 max-w-3xl">
+            <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-medium">
+              Annuaire des vendeurs
+            </div>
+            {stats.total > 0 ? (
+              <h1 className="font-display text-[clamp(2.2rem,3.6vw,3rem)] leading-[1.05] text-foreground tracking-tightest text-balance">
+                <span className="tabular">{stats.total}</span>{" "}
+                <span className="text-muted-foreground/70 font-normal">vendeur{stats.total > 1 ? "s" : ""} dans</span>{" "}
+                <span className="tabular">{stats.villages}</span>{" "}
+                <span className="text-muted-foreground/70 font-normal">village{stats.villages > 1 ? "s" : ""} —</span>{" "}
+                <span className="font-italic font-normal">{eur(stats.totalRevenue)}</span>{" "}
+                <span className="text-muted-foreground/70 font-normal">générés.</span>
+              </h1>
+            ) : (
+              <h1 className="font-display text-[clamp(2.2rem,3.6vw,3rem)] leading-[1.05] text-foreground tracking-tightest text-balance">
+                <span className="text-muted-foreground/60 font-normal">Aucun vendeur encore —</span>{" "}
+                <span className="font-italic">le premier rejoindra l'annuaire</span>{" "}
+                <span className="text-muted-foreground/60 font-normal">au prochain enregistrement.</span>
+              </h1>
+            )}
+          </div>
+          <Link
+            to="/add-phone"
+            className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary self-start"
+          >
+            <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+            Enregistrer un téléphone
+          </Link>
+        </header>
 
         {/* Stats strip */}
         {stats.total > 0 && (

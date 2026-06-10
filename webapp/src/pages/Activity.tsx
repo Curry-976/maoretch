@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Layout } from "@/components/Layout";
-import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 
 type Event = {
@@ -122,22 +121,79 @@ export default function Activity() {
 
   const groups = groupByDay(events);
 
-  const today = new Date().toLocaleDateString("fr-FR", {
-    weekday: "long",
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
+  // Build 7-day strip with per-day event counts
+  const daysStrip = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - (6 - i));
+    const key = d.toDateString();
+    const dayEvents = events.filter((e) => new Date(e.timestamp).toDateString() === key);
+    return {
+      date: d,
+      isToday: i === 6,
+      count: dayEvents.length,
+      dayLabel: d.toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", ""),
+      dayNum: d.getDate(),
+    };
   });
+  const maxCount = Math.max(...daysStrip.map((d) => d.count), 1);
+  const totalWeek = daysStrip.reduce((s, d) => s + d.count, 0);
 
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-8 md:py-12 space-y-10 max-w-[1000px]">
-        <PageHeader
-          eyebrow={today}
-          title="Le fil de"
-          italic="votre activité"
-          subline="Tout ce qui s'est passé : achats, ventes, vendeurs et clients enregistrés. Un journal continu pour ne rien rater."
-        />
+      <div className="px-6 md:px-10 py-8 md:py-12 space-y-10 max-w-[1100px]">
+        {/* Calendar strip — the strip IS the title */}
+        <header className="space-y-5 pb-8 border-b hairline-border">
+          <div className="flex items-baseline justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-medium">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-primary/60 animate-ping" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
+              </span>
+              7 derniers jours
+            </div>
+            <div className="text-[12px] text-muted-foreground">
+              <span className="font-display tabular text-foreground text-2xl mr-1.5">
+                {totalWeek || "—"}
+              </span>
+              événement{totalWeek > 1 ? "s" : ""} cette semaine
+            </div>
+          </div>
+          <div className="grid grid-cols-7 gap-2">
+            {daysStrip.map((d, i) => {
+              const intensity = maxCount > 0 ? d.count / maxCount : 0;
+              return (
+                <div
+                  key={i}
+                  className={`relative flex flex-col items-center gap-2 p-3 rounded-md border transition-all ${
+                    d.isToday ? "border-foreground/40 bg-card" : "hairline-border bg-card/50"
+                  }`}
+                >
+                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium capitalize">
+                    {d.dayLabel}
+                  </div>
+                  <div className={`font-display tabular text-2xl tracking-tight ${d.isToday ? "text-foreground" : "text-foreground/70"}`}>
+                    {d.dayNum}
+                  </div>
+                  <div className="w-full h-6 flex items-end justify-center">
+                    {d.count > 0 ? (
+                      <div
+                        className="w-full bg-primary/70 rounded-sm transition-all"
+                        style={{ height: `${Math.max(intensity * 100, 18)}%` }}
+                        title={`${d.count} événement${d.count > 1 ? "s" : ""}`}
+                      />
+                    ) : (
+                      <div className="w-full h-px bg-hairline" />
+                    )}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground tabular">
+                    {d.count || "—"}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </header>
 
         {isLoading ? (
           <div className="flex items-center justify-center py-16">

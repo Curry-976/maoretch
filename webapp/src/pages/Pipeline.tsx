@@ -13,7 +13,6 @@ import {
 import { api } from "@/lib/api";
 import { Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
-import { PageHeader } from "@/components/ui/page-header";
 
 function eur(n: number) {
   return new Intl.NumberFormat("fr-FR", {
@@ -25,29 +24,35 @@ function eur(n: number) {
 
 type LaneKey = "to_repair" | "for_sale" | "sold";
 
-const lanes: { key: LaneKey; label: string; description: string; tone: string; icon: any }[] = [
+const lanes: { key: LaneKey; label: string; description: string; accent: string; icon: any }[] = [
   {
     key: "to_repair",
     label: "À réparer",
     description: "État : à réparer",
-    tone: "from-warning/20 to-warning/0",
+    accent: "warning",
     icon: Wrench,
   },
   {
     key: "for_sale",
     label: "En vente",
     description: "Disponible à la vente",
-    tone: "from-primary/20 to-primary/0",
+    accent: "primary",
     icon: Tag,
   },
   {
     key: "sold",
     label: "Vendu",
     description: "Cession finalisée",
-    tone: "from-success/20 to-success/0",
+    accent: "success",
     icon: CheckCircle2,
   },
 ];
+
+const accentClasses: Record<string, { dot: string; text: string }> = {
+  warning: { dot: "bg-warning", text: "text-warning" },
+  primary: { dot: "bg-primary", text: "text-primary" },
+  success: { dot: "bg-success", text: "text-success" },
+};
 
 export default function Pipeline() {
   const queryClient = useQueryClient();
@@ -89,24 +94,50 @@ export default function Pipeline() {
     },
   });
 
+  const totalPhones = phones.length;
+  const totalValue = totals.to_repair + totals.for_sale + totals.sold;
+
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-8 md:py-12 space-y-10 max-w-[1600px]">
-        <PageHeader
-          eyebrow="Pipeline visuel"
-          title="Le parcours"
-          italic="de chaque appareil."
-          subline="Du téléphone à réparer jusqu'à la vente finale. Chaque carte représente un appareil ; cliquez pour faire avancer son statut."
-          actions={
-            <Link
-              to="/add-phone"
-              className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary"
-            >
-              <Plus className="w-3.5 h-3.5" strokeWidth={2} />
-              Nouveau téléphone
-            </Link>
-          }
-        />
+      <div className="px-6 md:px-10 py-6 md:py-8 space-y-6 max-w-[1600px]">
+        {/* Counter rail — the title IS the data */}
+        <header className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 pb-6 border-b hairline-border">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-medium">
+              <span>Pipeline</span>
+              <span className="text-muted-foreground/40">·</span>
+              <span>Inventaire visuel</span>
+            </div>
+            <div className="flex items-end gap-6 flex-wrap">
+              {lanes.map((lane) => {
+                const n = grouped[lane.key].length;
+                return (
+                  <div key={lane.key} className="flex items-baseline gap-2">
+                    <span className="font-display tabular text-4xl text-foreground leading-none">
+                      {n || "—"}
+                    </span>
+                    <span className="text-[12px] text-muted-foreground capitalize">{lane.label.toLowerCase()}</span>
+                  </div>
+                );
+              })}
+              <div className="ml-auto text-right">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                  Valeur totale
+                </div>
+                <div className="font-display tabular text-2xl text-foreground tracking-tight">
+                  {totalValue ? eur(totalValue) : "—"}
+                </div>
+              </div>
+            </div>
+          </div>
+          <Link
+            to="/add-phone"
+            className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary self-start"
+          >
+            <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+            Nouveau téléphone
+          </Link>
+        </header>
 
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
@@ -122,37 +153,37 @@ export default function Pipeline() {
                   key={lane.key}
                   className="card-soft rounded-lg overflow-hidden flex flex-col min-h-[400px]"
                 >
-                  {/* Lane header */}
-                  <div
-                    className={`relative p-5 border-b hairline-border bg-gradient-to-b ${lane.tone}`}
-                  >
+                  {/* Lane header — monochrome, accent only on the dot */}
+                  <div className="relative p-5 border-b hairline-border">
+                    <span
+                      className={`absolute left-0 top-0 bottom-0 w-[2px] ${accentClasses[lane.accent].dot}`}
+                    />
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <Icon className="w-4 h-4 text-foreground" strokeWidth={1.8} />
-                          <h3 className="font-display text-xl text-foreground tracking-tight">
-                            {lane.label}
-                          </h3>
+                          <span className={`w-1.5 h-1.5 rounded-full ${accentClasses[lane.accent].dot}`} />
+                          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                            {lane.description}
+                          </span>
                         </div>
-                        <div className="text-[11px] text-muted-foreground mt-1">
-                          {lane.description}
-                        </div>
+                        <h3 className="mt-2 font-display text-2xl text-foreground tracking-tight">
+                          {lane.label}
+                        </h3>
                       </div>
                       <div className="text-right">
-                        <div className="font-display tabular text-2xl text-foreground tracking-tight">
-                          {items.length}
-                        </div>
-                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                          {items.length > 1 ? "Appareils" : "Appareil"}
+                        <div className="font-display tabular text-3xl text-foreground tracking-tight">
+                          {items.length || "—"}
                         </div>
                       </div>
                     </div>
-                    <div className="mt-3 text-[12px] text-muted-foreground">
-                      Valeur :{" "}
-                      <span className="text-foreground font-medium tabular">
-                        {eur(totals[lane.key])}
-                      </span>
-                    </div>
+                    {items.length > 0 && (
+                      <div className="mt-3 text-[11px] text-muted-foreground">
+                        Valeur :{" "}
+                        <span className="text-foreground font-medium tabular">
+                          {eur(totals[lane.key])}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Lane content */}

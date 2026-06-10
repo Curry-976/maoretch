@@ -20,7 +20,36 @@ import { api } from "@/lib/api";
 import { Seller, Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { SignaturePad } from "@/components/SignaturePad";
-import { PageHeader } from "@/components/ui/page-header";
+
+function Stepper({ steps }: { steps: { num: string; label: string; done: boolean }[] }) {
+  return (
+    <div className="flex items-center gap-3 sm:gap-5 flex-wrap">
+      {steps.map((s, i) => (
+        <div key={s.num} className="flex items-center gap-3">
+          <div
+            className={`flex items-center gap-2 transition-colors ${
+              s.done ? "text-foreground" : "text-muted-foreground/50"
+            }`}
+          >
+            <span
+              className={`w-7 h-7 rounded-full border flex items-center justify-center text-[10px] font-mono tabular transition-all ${
+                s.done
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-hairline"
+              }`}
+            >
+              {s.num}
+            </span>
+            <span className="text-[12px] uppercase tracking-[0.16em] font-medium">{s.label}</span>
+          </div>
+          {i < steps.length - 1 && (
+            <span className="w-8 sm:w-16 h-px bg-hairline" aria-hidden />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const CONDITIONS = [
   { value: "Neuf", label: "Neuf" },
@@ -167,15 +196,39 @@ export default function AddPhone() {
     createMutation.mutate();
   };
 
+  // Step progression
+  const sellerComplete =
+    sellerMode === "existing"
+      ? !!selectedSellerId
+      : firstName && lastName && village && email.trim() && sellerPhone.trim() && contractAccepted && signature;
+  const phoneComplete = !!model && !!condition;
+  const priceComplete = !!purchasePrice && !!resalePrice;
+
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-8 md:py-12 space-y-10 max-w-[1100px]">
-        <PageHeader
-          eyebrow="Nouvel appareil"
-          title="Enregistrer un"
-          italic="téléphone"
-          subline="Démarchage, état, prix, marge — tout tient dans une seule passe. Si le vendeur est nouveau, vous recueillez aussi sa signature de cession."
-        />
+      <div className="px-6 md:px-10 py-8 md:py-12 space-y-8 max-w-[1100px]">
+        {/* Stepper header — no editorial big title */}
+        <header className="space-y-5 pb-6 border-b hairline-border">
+          <div className="flex items-center justify-between gap-4">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center gap-2 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ← Retour
+            </button>
+            <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-medium">
+              Nouvel enregistrement
+            </div>
+          </div>
+          <Stepper
+            steps={[
+              { num: "01", label: "Vendeur", done: !!sellerComplete },
+              { num: "02", label: "Appareil", done: phoneComplete },
+              { num: "03", label: "Prix", done: priceComplete },
+            ]}
+          />
+        </header>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Section 01 — Vendeur */}
