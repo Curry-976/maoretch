@@ -335,8 +335,11 @@ export default function DocumentEditor() {
                           if (!p) return;
                           setLine(i, {
                             phoneId: pid,
-                            label: `${p.model} · ${p.condition}`,
-                            description: line.description ||
+                            label: p.imei
+                              ? `${p.model} · ${p.condition} · IMEI ${p.imei}`
+                              : `${p.model} · ${p.condition}`,
+                            description:
+                              line.description ||
                               `Vendeur : ${p.seller.firstName} ${p.seller.lastName} · ${p.seller.village}`,
                             unitPrice: p.resalePrice,
                             quantity: 1,
@@ -355,7 +358,8 @@ export default function DocumentEditor() {
                           )
                           .map((p) => (
                             <option key={p.id} value={p.id}>
-                              {p.model} · {p.condition} · {p.seller.village} ·{" "}
+                              {p.model} · {p.condition}
+                              {p.imei ? ` · IMEI ${p.imei}` : ""} ·{" "}
                               {new Intl.NumberFormat("fr-FR", {
                                 style: "currency",
                                 currency: "EUR",

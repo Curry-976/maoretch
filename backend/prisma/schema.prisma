@@ -158,6 +158,7 @@ model DocumentLine {
 model Phone {
   id            String   @id @default(cuid())
   model         String
+  imei          String?
   condition     String
   photoUrl      String?
   purchasePrice Float

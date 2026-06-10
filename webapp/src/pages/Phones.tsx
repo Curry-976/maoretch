@@ -288,6 +288,11 @@ function PhoneCard({
             <span className="text-muted-foreground/70">{phone.seller.village}</span>{" "}
             · <span className="text-muted-foreground/70">{phone.condition}</span>
           </div>
+          {phone.imei && (
+            <div className="text-[10px] text-muted-foreground/60 font-mono tabular mt-0.5 truncate">
+              IMEI {phone.imei}
+            </div>
+          )}
         </div>
 
         <div className="hidden sm:block text-right min-w-[120px]">

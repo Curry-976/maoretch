@@ -89,6 +89,7 @@ export default function AddPhone() {
   const [contractAccepted, setContractAccepted] = useState(false);
 
   const [model, setModel] = useState("");
+  const [imei, setImei] = useState("");
   const [condition, setCondition] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string>("");
   const [purchasePrice, setPurchasePrice] = useState("");
@@ -116,6 +117,7 @@ export default function AddPhone() {
       }
       return api.post<Phone>("/api/phones", {
         model,
+        imei: imei.trim() || undefined,
         condition,
         photoUrl: photoUrl || undefined,
         purchasePrice: parseFloat(purchasePrice),
@@ -391,6 +393,14 @@ export default function AddPhone() {
                   value={model}
                   onChange={setModel}
                   placeholder="iPhone 13 Pro, Samsung Galaxy S22…"
+                />
+
+                <Input
+                  label="IMEI"
+                  value={imei}
+                  onChange={(v) => setImei(v.replace(/[^0-9]/g, "").slice(0, 15))}
+                  type="tel"
+                  placeholder="15 chiffres — composez *#06#"
                 />
 
                 <div>

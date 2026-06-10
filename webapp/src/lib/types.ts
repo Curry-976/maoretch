@@ -13,6 +13,7 @@ export interface Seller {
 export interface Phone {
   id: string;
   model: string;
+  imei: string | null;
   condition: string;
   photoUrl: string | null;
   purchasePrice: number;

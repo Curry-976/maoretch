@@ -11,9 +11,13 @@ type Variables = {
 
 export const phonesRouter = new Hono<{ Variables: Variables }>();
 
-// List all phones
+// List all phones (optional ?status=for_sale|sold)
 phonesRouter.get("/", async (c) => {
+  const status = c.req.query("status");
+  const where =
+    status === "for_sale" || status === "sold" ? { status } : {};
   const phones = await prisma.phone.findMany({
+    where,
     include: { seller: true },
     orderBy: { createdAt: "desc" },
   });
@@ -35,7 +39,7 @@ phonesRouter.get("/:id", async (c) => {
 phonesRouter.post("/", zValidator("json", CreatePhoneSchema), async (c) => {
   const body = c.req.valid("json");
   const phone = await prisma.phone.create({
-    data: body,
+    data: { ...body, imei: body.imei?.trim() || null },
     include: { seller: true },
   });
   return c.json({ data: phone }, 201);
@@ -45,9 +49,11 @@ phonesRouter.post("/", zValidator("json", CreatePhoneSchema), async (c) => {
 phonesRouter.patch("/:id", zValidator("json", UpdatePhoneSchema), async (c) => {
   const id = c.req.param("id");
   const body = c.req.valid("json");
+  const data: Record<string, unknown> = { ...body };
+  if (body.imei !== undefined) data.imei = body.imei?.trim() || null;
   const phone = await prisma.phone.update({
     where: { id },
-    data: body,
+    data,
     include: { seller: true },
   });
   return c.json({ data: phone });
