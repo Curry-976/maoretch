@@ -76,31 +76,42 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background">
       {/* === Desktop sidebar (dark ink contrast against light main) === */}
-      <aside className="hidden md:flex w-[244px] flex-col ink-surface relative">
-        {/* Logo block */}
-        <div className="p-5 pb-6 border-b border-sidebar-border">
-          <Link to="/dashboard" className="block group">
-            <div className="paper-tile rounded-md p-3 flex items-center justify-center brand-glow">
-              <BrandLogo size="md" />
-            </div>
-            <div className="mt-3 px-0.5 flex items-center justify-between">
-              <span className="font-display text-[10px] tracking-[0.16em] text-ink-foreground/70 uppercase">
-                Maore-Tech
-              </span>
-              <span className="text-[9px] text-ink-foreground/30 uppercase tracking-[0.16em]">
-                CRM
-              </span>
-            </div>
-          </Link>
-        </div>
+      <aside className="hidden md:flex w-[272px] flex-col ink-surface relative">
+        {/* HERO LOGO BLOCK — full-bleed paper panel, no longer a postage stamp */}
+        <Link
+          to="/dashboard"
+          className="group relative block paper-tile mx-4 mt-6 mb-4 rounded-md overflow-hidden"
+        >
+          {/* Soft brand wash on the white tile */}
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none opacity-90"
+            style={{
+              background:
+                "radial-gradient(120% 80% at 80% 0%, hsl(213 78% 88% / 0.55), transparent 65%), radial-gradient(80% 60% at 0% 100%, hsl(36 50% 85% / 0.4), transparent 70%)",
+            }}
+          />
+          <div className="relative px-5 pt-6 pb-4 flex items-center justify-center">
+            <BrandLogo size="xl" className="transition-transform duration-700 ease-out-expo group-hover:scale-[1.03]" />
+          </div>
+          {/* Lockup foot */}
+          <div className="relative border-t border-paper-foreground/10 px-4 pt-3 pb-3.5 flex items-center justify-between">
+            <span className="font-display text-[11px] tracking-[0.18em] text-paper-foreground/80 uppercase font-bold">
+              Maore-Tech
+            </span>
+            <span className="font-italic text-[10px] text-paper-foreground/55 italic">
+              phone reseller
+            </span>
+          </div>
+        </Link>
 
-        {/* Quick search button */}
-        <button className="mx-4 mt-4 mb-2 group flex items-center justify-between gap-2 px-3 py-2 rounded-md bg-sidebar-accent/60 hover:bg-sidebar-accent text-ink-foreground/70 hover:text-ink-foreground transition-all duration-300 ease-out-expo border border-sidebar-border">
+        {/* Search rail — slim hairline, ghost button */}
+        <button className="mx-4 mb-3 group flex items-center justify-between gap-2 px-3 py-2 rounded-md text-ink-foreground/55 hover:text-ink-foreground transition-all duration-300 ease-out-expo border border-sidebar-border/60 hover:border-sidebar-border">
           <span className="flex items-center gap-2 text-[12px]">
-            <Search className="w-3.5 h-3.5" strokeWidth={1.5} />
-            Rechercher…
+            <Search className="w-3 h-3" strokeWidth={1.5} />
+            Rechercher
           </span>
-          <span className="flex items-center gap-0.5 text-[9px] text-ink-foreground/40">
+          <span className="flex items-center gap-0.5 text-[9px] text-ink-foreground/30">
             <Command className="w-2.5 h-2.5" strokeWidth={1.5} />K
           </span>
         </button>
@@ -177,9 +188,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* === Mobile header === */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 ink-surface px-4 h-14 flex items-center justify-between">
-        <Link to="/dashboard" className="paper-tile rounded-sm px-2 py-1.5">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 ink-surface px-4 h-16 flex items-center justify-between">
+        <Link to="/dashboard" className="paper-tile rounded-md px-3 py-2 flex items-center gap-2">
           <BrandLogo size="sm" />
+          <span className="font-display text-[10px] tracking-[0.18em] text-paper-foreground/80 uppercase font-bold">
+            Maore-Tech
+          </span>
         </Link>
         <div className="flex items-center gap-2">
           <button
@@ -204,7 +218,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           onClick={() => setMobileOpen(false)}
         >
           <div
-            className="absolute top-14 left-0 right-0 ink-surface p-4 space-y-4"
+            className="absolute top-16 left-0 right-0 ink-surface p-4 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             {sections.map((section) => (
@@ -251,7 +265,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Main */}
-      <main className="flex-1 md:overflow-auto pt-14 md:pt-0">{children}</main>
+      <main className="flex-1 md:overflow-auto pt-16 md:pt-0">{children}</main>
     </div>
   );
 }
