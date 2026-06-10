@@ -20,6 +20,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { signOut, useSession } from "@/lib/auth-client";
 import { BrandLogo } from "@/components/Brand";
+import { InstallButton } from "@/components/InstallButton";
 
 type NavItem = {
   path: string;
@@ -177,7 +178,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* User card */}
-        <div className="p-3 border-t border-sidebar-border">
+        <div className="p-3 border-t border-sidebar-border space-y-2">
+          <InstallButton className="w-full justify-center" />
           <div className="flex items-center gap-2.5 px-2 py-2 rounded-md hover:bg-sidebar-accent/50 transition-colors">
             <div className="w-8 h-8 rounded-full bg-ink-foreground/10 border border-ink-foreground/15 text-ink-foreground flex items-center justify-center text-[12px] font-semibold flex-shrink-0">
               {session?.user?.email?.[0]?.toUpperCase() ?? "U"}
@@ -267,18 +269,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
             ))}
-            <button
-              onClick={handleSignOut}
-              disabled={signingOut}
-              className="w-full flex items-center gap-3 px-3 py-3 mt-3 text-sm text-ink-foreground/70 hover:text-destructive border-t border-sidebar-border disabled:opacity-50"
-            >
-              {signingOut ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <LogOut className="w-4 h-4" strokeWidth={1.5} />
-              )}
-              Se déconnecter
-            </button>
+            <div className="mt-3 pt-3 border-t border-sidebar-border space-y-2">
+              <InstallButton className="w-full justify-center" />
+              <button
+                onClick={handleSignOut}
+                disabled={signingOut}
+                className="w-full flex items-center gap-3 px-3 py-3 text-sm text-ink-foreground/70 hover:text-destructive disabled:opacity-50"
+              >
+                {signingOut ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <LogOut className="w-4 h-4" strokeWidth={1.5} />
+                )}
+                Se déconnecter
+              </button>
+            </div>
           </div>
         </div>
       )}
