@@ -12,11 +12,12 @@ import {
   Receipt,
 } from "lucide-react";
 import { api } from "@/lib/api";
-import { Client, DocumentType, SalesDocument } from "@/lib/types";
+import { Client, DocumentType, Phone, SalesDocument } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { PageMotion } from "@/components/ui/page-motion";
 
 type Line = {
+  phoneId: string;
   label: string;
   description: string;
   quantity: number;
@@ -32,7 +33,7 @@ function eur(n: number) {
 }
 
 function emptyLine(): Line {
-  return { label: "", description: "", quantity: 1, unitPrice: 0 };
+  return { phoneId: "", label: "", description: "", quantity: 1, unitPrice: 0 };
 }
 
 export default function DocumentEditor() {
@@ -86,6 +87,7 @@ export default function DocumentEditor() {
     setLines(
       existing.lines.length
         ? existing.lines.map((l) => ({
+            phoneId: l.phoneId ?? "",
             label: l.label,
             description: l.description ?? "",
             quantity: l.quantity,
@@ -109,6 +111,16 @@ export default function DocumentEditor() {
     queryKey: ["clients"],
     queryFn: () => api.get<Client[]>("/api/clients"),
   });
+
+  // Available phones in inventory — picker fills line label + price
+  const { data: phones = [] } = useQuery({
+    queryKey: ["phones-for-sale"],
+    queryFn: () => api.get<Phone[]>("/api/phones?status=for_sale"),
+  });
+  const phoneById = useMemo(
+    () => Object.fromEntries(phones.map((p) => [p.id, p])),
+    [phones],
+  );
 
   const subtotal = useMemo(
     () => lines.reduce((s, l) => s + l.quantity * l.unitPrice, 0),
@@ -134,6 +146,7 @@ export default function DocumentEditor() {
         lines: lines
           .filter((l) => l.label.trim())
           .map((l, i) => ({
+            phoneId: l.phoneId || undefined,
             label: l.label,
             description: l.description.trim() || undefined,
             quantity: Number(l.quantity) || 0,
@@ -309,10 +322,55 @@ export default function DocumentEditor() {
                   className="card-soft rounded-md p-3 grid grid-cols-12 gap-2 items-start"
                 >
                   <div className="col-span-12 sm:col-span-5 space-y-1.5">
+                    {phones.length > 0 && (
+                      <select
+                        value={line.phoneId}
+                        onChange={(e) => {
+                          const pid = e.target.value;
+                          if (!pid) {
+                            setLine(i, { phoneId: "" });
+                            return;
+                          }
+                          const p = phoneById[pid];
+                          if (!p) return;
+                          setLine(i, {
+                            phoneId: pid,
+                            label: `${p.model} · ${p.condition}`,
+                            description: line.description ||
+                              `Vendeur : ${p.seller.firstName} ${p.seller.lastName} · ${p.seller.village}`,
+                            unitPrice: p.resalePrice,
+                            quantity: 1,
+                          });
+                        }}
+                        className="w-full px-2.5 py-1.5 bg-card border hairline-border rounded-md text-[12px] text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+                      >
+                        <option value="">— Choisir dans l'inventaire (optionnel) —</option>
+                        {phones
+                          .filter(
+                            (p) =>
+                              !lines.some(
+                                (other, idx) =>
+                                  idx !== i && other.phoneId === p.id,
+                              ),
+                          )
+                          .map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.model} · {p.condition} · {p.seller.village} ·{" "}
+                              {new Intl.NumberFormat("fr-FR", {
+                                style: "currency",
+                                currency: "EUR",
+                                maximumFractionDigits: 0,
+                              }).format(p.resalePrice)}
+                            </option>
+                          ))}
+                      </select>
+                    )}
                     <input
                       type="text"
                       value={line.label}
-                      onChange={(e) => setLine(i, { label: e.target.value })}
+                      onChange={(e) =>
+                        setLine(i, { label: e.target.value, phoneId: line.phoneId })
+                      }
                       placeholder="Désignation (ex. iPhone 13 Pro — bon état)"
                       className="w-full px-2.5 py-2 bg-background border hairline-border rounded-md text-sm text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
                     />

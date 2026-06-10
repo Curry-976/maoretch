@@ -136,6 +136,12 @@ model DocumentLine {
   documentId  String
   document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
+  // Optional link to an actual phone in inventory. If set, label / unitPrice
+  // were snapshotted from that phone at the moment the line was created — the
+  // phone may be later renamed or deleted, the line stays intact.
+  phoneId     String?
+  phone       Phone?   @relation(fields: [phoneId], references: [id], onDelete: SetNull)
+
   label       String
   description String?
   quantity    Float    @default(1)
@@ -146,6 +152,7 @@ model DocumentLine {
   createdAt   DateTime @default(now())
 
   @@index([documentId])
+  @@index([phoneId])
 }
 
 model Phone {
@@ -159,6 +166,7 @@ model Phone {
   status        String   @default("for_sale")
   sellerId      String
   seller        Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  documentLines DocumentLine[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

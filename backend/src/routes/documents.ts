@@ -88,6 +88,7 @@ documentsRouter.post("/", zValidator("json", CreateDocumentSchema), async (c) =>
 
   // Compute totals from lines
   const lines = body.lines.map((l, i) => ({
+    phoneId: l.phoneId || null,
     label: l.label,
     description: l.description || null,
     quantity: l.quantity,
@@ -144,10 +145,28 @@ documentsRouter.patch("/:id", zValidator("json", UpdateDocumentSchema), async (c
   if (body.clientAddress !== undefined) data.clientAddress = cleaned.clientAddress ?? null;
   if (body.issuedAt) data.issuedAt = new Date(body.issuedAt);
   if (body.dueAt) data.dueAt = new Date(body.dueAt);
+  // Track phone-status side effects: when an invoice is marked paid we flip
+  // every linked phone to "sold"; when payment is undone we put them back
+  // up for sale.
+  let phoneSideEffect: "sold" | "for_sale" | null = null;
   if (body.status !== undefined) {
+    const previous = await prisma.document.findUnique({
+      where: { id },
+      select: { status: true, type: true },
+    });
     data.status = body.status;
-    if (body.status === "paid") data.paidAt = new Date();
-    if (body.status !== "paid") data.paidAt = null;
+    if (body.status === "paid") {
+      data.paidAt = new Date();
+      if (previous?.type === "invoice" && previous.status !== "paid") {
+        phoneSideEffect = "sold";
+      }
+    }
+    if (body.status !== "paid") {
+      data.paidAt = null;
+      if (previous?.type === "invoice" && previous.status === "paid") {
+        phoneSideEffect = "for_sale";
+      }
+    }
   }
   if (body.notes !== undefined) data.notes = cleaned.notes ?? null;
   if (body.paymentTerms !== undefined) data.paymentTerms = cleaned.paymentTerms ?? null;
@@ -161,7 +180,8 @@ documentsRouter.patch("/:id", zValidator("json", UpdateDocumentSchema), async (c
     });
     if (!existing) return c.json({ error: "Not found" }, 404);
 
-    const lines = (body.lines ?? existing.lines).map((l, i) => ({
+    const lines = (body.lines ?? existing.lines).map((l: any, i: number) => ({
+      phoneId: ("phoneId" in l ? l.phoneId : null) || null,
       label: l.label,
       description: ("description" in l ? l.description : null) || null,
       quantity: l.quantity,
@@ -190,6 +210,20 @@ documentsRouter.patch("/:id", zValidator("json", UpdateDocumentSchema), async (c
     data,
     include: { lines: { orderBy: { position: "asc" } }, client: true },
   });
+
+  // Apply phone-status side effects.
+  if (phoneSideEffect) {
+    const phoneIds = updated.lines
+      .map((l) => l.phoneId)
+      .filter((p): p is string => Boolean(p));
+    if (phoneIds.length > 0) {
+      await prisma.phone.updateMany({
+        where: { id: { in: phoneIds } },
+        data: { status: phoneSideEffect },
+      });
+    }
+  }
+
   return c.json({ data: updated });
 });
 
