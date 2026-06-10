@@ -1,67 +1,107 @@
 import { ReactNode } from "react";
+import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 type Stat = {
-  kicker: string;
+  label: string;
   value: ReactNode;
   sub?: ReactNode;
-  emphasis?: "positive" | "negative" | "neutral" | "brand";
+  delta?: { value: number; suffix?: string };
+  tone?: "default" | "positive" | "negative" | "brand";
+  hero?: boolean;
 };
 
-const emphasisClasses: Record<NonNullable<Stat["emphasis"]>, string> = {
+const toneText: Record<NonNullable<Stat["tone"]>, string> = {
+  default: "text-foreground",
   positive: "text-success",
   negative: "text-destructive",
-  neutral: "text-foreground",
   brand: "text-primary",
 };
 
 export function StatStrip({
-  stats,
   hero,
+  stats,
   className = "",
 }: {
+  hero?: Stat;
   stats: Stat[];
-  hero?: Stat & { delta?: ReactNode };
   className?: string;
 }) {
   return (
-    <section className={`grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-10 lg:gap-16 ${className}`}>
-      {hero && (
-        <div className="space-y-3">
-          <div className="font-mono-kicker text-[10px] text-muted-foreground">{hero.kicker}</div>
-          <div
-            className={`font-heading text-[clamp(3.5rem,7vw,6rem)] leading-none italic tabular ${
-              emphasisClasses[hero.emphasis ?? "neutral"]
-            }`}
-          >
-            {hero.value}
-          </div>
-          {(hero.sub || hero.delta) && (
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              {hero.delta && <span className="tabular">{hero.delta}</span>}
-              {hero.sub && <span>{hero.sub}</span>}
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className={`grid ${stats.length <= 3 ? "grid-cols-3" : "grid-cols-2 md:grid-cols-3"} gap-x-6 gap-y-6 self-end`}>
+    <section className={`grid grid-cols-1 lg:grid-cols-[1.2fr_2fr] gap-8 lg:gap-12 ${className}`}>
+      {hero && <HeroKpi stat={hero} />}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         {stats.map((s, i) => (
-          <div key={i} className="space-y-1.5 relative">
-            {i !== 0 && (
-              <span className="hidden md:block absolute -left-3 top-1 bottom-1 w-px bg-hairline" />
-            )}
-            <div className="font-mono-kicker text-[9px] text-muted-foreground">{s.kicker}</div>
-            <div
-              className={`font-heading text-3xl leading-none tabular ${
-                emphasisClasses[s.emphasis ?? "neutral"]
-              }`}
-            >
-              {s.value}
-            </div>
-            {s.sub && <div className="text-[11px] text-muted-foreground/70">{s.sub}</div>}
-          </div>
+          <StatTile key={i} stat={s} />
         ))}
       </div>
     </section>
+  );
+}
+
+function HeroKpi({ stat }: { stat: Stat }) {
+  return (
+    <div className="card-soft rounded-lg p-7 lg:p-9 relative overflow-hidden">
+      {/* Subtle aurora corner */}
+      <div
+        aria-hidden
+        className="absolute -top-20 -right-20 w-60 h-60 rounded-full pointer-events-none opacity-50"
+        style={{
+          background: "radial-gradient(circle, hsl(213 78% 80% / 0.25), transparent 70%)",
+        }}
+      />
+      <div className="relative space-y-4">
+        <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+          {stat.label}
+        </div>
+        <div
+          className={`font-display tabular text-[clamp(2.8rem,5vw,4.4rem)] leading-none tracking-tightest ${
+            toneText[stat.tone ?? "default"]
+          }`}
+        >
+          {stat.value}
+        </div>
+        <div className="flex items-center gap-3 text-sm">
+          {stat.delta && <Delta delta={stat.delta} />}
+          {stat.sub && <span className="text-muted-foreground">{stat.sub}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatTile({ stat }: { stat: Stat }) {
+  return (
+    <div className="card-soft rounded-lg p-5 hover:-translate-y-0.5 transition-transform duration-500 ease-out-expo">
+      <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+        {stat.label}
+      </div>
+      <div
+        className={`mt-2 font-display tabular text-2xl leading-none tracking-tight ${
+          toneText[stat.tone ?? "default"]
+        }`}
+      >
+        {stat.value}
+      </div>
+      <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+        {stat.sub && <span className="truncate">{stat.sub}</span>}
+        {stat.delta && <Delta delta={stat.delta} compact />}
+      </div>
+    </div>
+  );
+}
+
+function Delta({ delta, compact = false }: { delta: { value: number; suffix?: string }; compact?: boolean }) {
+  const positive = delta.value >= 0;
+  const Icon = positive ? ArrowUpRight : ArrowDownRight;
+  return (
+    <span
+      className={`inline-flex items-center gap-0.5 font-medium tabular ${
+        positive ? "text-success" : "text-destructive"
+      } ${compact ? "text-[10px]" : "text-xs"}`}
+    >
+      <Icon className={compact ? "w-2.5 h-2.5" : "w-3 h-3"} />
+      {positive ? "+" : ""}
+      {delta.value.toFixed(1)}%{delta.suffix ?? ""}
+    </span>
   );
 }

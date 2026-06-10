@@ -67,6 +67,10 @@ export default {
           DEFAULT: "hsl(var(--paper))",
           foreground: "hsl(var(--paper-foreground))",
         },
+        ink: {
+          DEFAULT: "hsl(var(--ink))",
+          foreground: "hsl(var(--ink-foreground))",
+        },
         hairline: "hsl(var(--hairline))",
         success: {
           DEFAULT: "hsl(var(--success))",
@@ -83,11 +87,14 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["DM Sans", "sans-serif"],
-        heading: ["Instrument Serif", "serif"],
-        wordmark: ["Bebas Neue", "sans-serif"],
-        mono: ["JetBrains Mono", "ui-monospace", "monospace"],
-        syne: ["Syne", "sans-serif"],
+        sans: ["Switzer", "system-ui", "sans-serif"],
+        display: ["Cabinet Grotesk", "sans-serif"],
+        heading: ["Cabinet Grotesk", "sans-serif"],
+        italic: ["Sentient", "Cambria", "Georgia", "serif"],
+        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+      },
+      letterSpacing: {
+        tightest: "-0.04em",
       },
       keyframes: {
         "accordion-down": {

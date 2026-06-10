@@ -1,61 +1,62 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Cabinet Grotesk + Switzer + Sentient italic loaded via index.html (Fontshare) */
+
 @layer base {
   :root {
-    /* ---- Warm graphite base, not the usual bluish dark ---- */
-    --background: 30 8% 7%;
-    --foreground: 38 25% 92%;
+    /* === LIGHT THEME — warm cream === */
+    --background: 40 30% 96%;       /* warm off-white */
+    --foreground: 220 25% 12%;      /* deep ink, slightly cool */
 
-    --card: 30 8% 9%;
-    --card-foreground: 38 25% 92%;
+    --card: 0 0% 100%;              /* pure white cards over cream */
+    --card-foreground: 220 25% 12%;
 
-    --popover: 30 8% 9%;
-    --popover-foreground: 38 25% 92%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 12%;
 
-    /* Brand blue stays for primary, but used sparingly */
-    --primary: 213 78% 48%;
-    --primary-foreground: 38 25% 96%;
+    --primary: 213 78% 42%;         /* slightly deeper brand blue */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 30 6% 14%;
-    --secondary-foreground: 38 25% 88%;
+    --secondary: 40 18% 92%;        /* warm gray for chips */
+    --secondary-foreground: 220 25% 18%;
 
-    --muted: 30 6% 13%;
-    --muted-foreground: 30 8% 55%;
+    --muted: 40 18% 94%;
+    --muted-foreground: 220 8% 42%;
 
-    --accent: 213 78% 48%;
-    --accent-foreground: 38 25% 96%;
+    --accent: 213 78% 42%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Off-white warm — the "paper signed" secondary accent */
-    --paper: 36 30% 92%;
-    --paper-foreground: 30 10% 12%;
+    --ink: 220 30% 10%;             /* sidebar / contrast surfaces */
+    --ink-foreground: 40 20% 96%;
 
-    --destructive: 8 70% 52%;
-    --destructive-foreground: 38 25% 96%;
+    --paper: 40 35% 98%;            /* signed paper card */
+    --paper-foreground: 220 25% 12%;
 
-    --border: 30 6% 16%;
-    --hairline: 30 6% 18%;
-    --input: 30 6% 13%;
-    --ring: 213 78% 48%;
+    --destructive: 4 70% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --radius: 0.5rem;
+    --success: 142 50% 38%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 90% 50%;
+    --warning-foreground: 0 0% 100%;
 
-    --sidebar-background: 30 8% 5%;
-    --sidebar-foreground: 38 20% 80%;
-    --sidebar-primary: 213 78% 48%;
-    --sidebar-primary-foreground: 38 25% 96%;
-    --sidebar-accent: 30 6% 12%;
-    --sidebar-accent-foreground: 38 25% 92%;
-    --sidebar-border: 30 6% 13%;
-    --sidebar-ring: 213 78% 48%;
+    --border: 220 14% 88%;
+    --hairline: 220 14% 84%;
+    --input: 220 14% 88%;
+    --ring: 213 78% 42%;
 
-    --success: 142 50% 48%;
-    --success-foreground: 38 25% 96%;
-    --warning: 38 90% 55%;
-    --warning-foreground: 30 10% 8%;
+    --radius: 0.375rem;
+
+    --sidebar-background: 220 30% 10%;
+    --sidebar-foreground: 40 20% 88%;
+    --sidebar-primary: 213 78% 55%;
+    --sidebar-primary-foreground: 220 30% 10%;
+    --sidebar-accent: 220 25% 16%;
+    --sidebar-accent-foreground: 40 20% 96%;
+    --sidebar-border: 220 25% 18%;
+    --sidebar-ring: 213 78% 55%;
   }
 }
 
@@ -63,97 +64,137 @@
   * { @apply border-border; }
 
   html, body, #root { height: 100%; }
+  /* Remove the dark-class default — we no longer want dark mode globally */
+  html.dark { color-scheme: light; }
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'DM Sans', sans-serif;
-    font-feature-settings: 'ss01', 'cv11';
+    font-family: 'Switzer', system-ui, sans-serif;
+    font-feature-settings: 'ss01', 'cv11', 'tnum' off;
+    font-optical-sizing: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+
+    /* Subtle warm gradient texture, not the cliché tech radial */
+    background-color: hsl(var(--background));
     background-image:
-      radial-gradient(at 12% 8%, hsl(213 60% 30% / 0.10), transparent 45%),
-      radial-gradient(at 92% 92%, hsl(36 30% 50% / 0.05), transparent 45%);
+      radial-gradient(at 0% 0%, hsl(213 60% 80% / 0.10), transparent 40%),
+      radial-gradient(at 100% 100%, hsl(36 50% 70% / 0.08), transparent 50%);
     background-attachment: fixed;
   }
 
-  /* Subtle film grain over everything */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.035;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-
-  /* All headings — editorial direction */
+  /* Editorial title default */
   h1, h2, h3 {
-    font-family: 'Instrument Serif', 'DM Sans', serif;
+    font-family: 'Cabinet Grotesk', 'Switzer', sans-serif;
     letter-spacing: -0.02em;
-    font-weight: 400;
+    font-weight: 700;
   }
 
-  /* Numeric data should be tabular by default */
+  /* Tabular numerics for data */
   [data-num], .tabular {
-    font-variant-numeric: tabular-nums;
+    font-variant-numeric: tabular-nums lining-nums;
     font-feature-settings: 'tnum' 1, 'lnum' 1;
   }
 }
 
 @layer utilities {
-  /* Existing Bebas Neue stays available, used only for the wordmark now */
-  .font-wordmark {
-    font-family: 'Bebas Neue', sans-serif;
-    letter-spacing: 0.06em;
+  .font-display {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    letter-spacing: -0.02em;
+    font-weight: 800;
   }
 
   .font-heading {
-    font-family: 'Instrument Serif', serif;
-    letter-spacing: -0.02em;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    letter-spacing: -0.015em;
+    font-weight: 700;
   }
 
-  .font-mono-kicker {
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
-    letter-spacing: 0.32em;
-    text-transform: uppercase;
-    font-weight: 400;
+  .font-sans {
+    font-family: 'Switzer', system-ui, sans-serif;
   }
 
-  .glass {
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+  .font-serif-italic {
+    font-family: 'Sentient', 'Cambria', Georgia, serif;
+    font-style: italic;
   }
 
-  .hairline {
-    border-color: hsl(var(--hairline));
-    border-width: 0.5px;
+  /* Soft elevation system — light theme */
+  .card-soft {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--hairline));
+    box-shadow:
+      0 1px 0 hsl(220 14% 92% / 0.7),
+      0 1px 3px hsl(220 25% 12% / 0.04),
+      0 8px 24px -8px hsl(220 25% 12% / 0.06);
   }
 
-  /* Editorial paper card — for the logo on dark */
+  .card-elevated {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--hairline));
+    box-shadow:
+      0 1px 0 hsl(220 14% 92% / 0.7),
+      0 4px 16px -2px hsl(220 25% 12% / 0.08),
+      0 24px 48px -16px hsl(220 25% 12% / 0.12);
+  }
+
+  /* Ink surface — for sidebar / nav / CTA blocks */
+  .ink-surface {
+    background: hsl(var(--ink));
+    color: hsl(var(--ink-foreground));
+  }
+
+  /* Paper card — used for contract & logo treatments */
   .paper-tile {
     background: hsl(var(--paper));
     color: hsl(var(--paper-foreground));
     box-shadow:
-      0 1px 0 0 rgba(255, 255, 255, 0.06) inset,
-      0 24px 60px -20px hsl(0 0% 0% / 0.5),
-      0 0 0 0.5px hsl(213 78% 48% / 0.18);
+      inset 0 1px 0 hsl(0 0% 100% / 0.8),
+      0 1px 2px hsl(220 25% 12% / 0.04),
+      0 8px 20px -8px hsl(220 25% 12% / 0.10);
   }
 
+  /* Brand glow — used sparingly */
   .brand-glow {
-    box-shadow: 0 0 60px -10px hsl(213 78% 48% / 0.35);
+    box-shadow: 0 0 80px -20px hsl(213 78% 42% / 0.35);
   }
 
-  /* Cubic-bezier we'll reuse for entrance animations */
+  /* Subtle dot grid background (used on dashboard/empty states) */
+  .dot-grid {
+    background-image: radial-gradient(circle, hsl(220 14% 80%) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: 0 0;
+  }
+
+  .hairline-border {
+    border-color: hsl(var(--hairline));
+    border-width: 1px;
+  }
+
+  /* Easing curves */
   .ease-out-expo {
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
+  .ease-spring {
+    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .text-balance { text-wrap: balance; }
+
+  /* Magnetic CTA helper */
+  .btn-magnetic {
+    transition-property: transform, box-shadow, background-color, color;
+    transition-duration: 400ms;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-magnetic:hover { transform: translateY(-1px); }
+  .btn-magnetic:active { transform: translateY(0); }
+
+  /* Selection */
 }
 
-::selection { background: hsl(213 78% 48% / 0.4); color: white; }
-::-webkit-scrollbar { width: 10px; height: 10px; }
+::selection { background: hsl(213 78% 42% / 0.18); color: hsl(220 30% 10%); }
+::-webkit-scrollbar { width: 12px; height: 12px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: hsl(30 6% 14%); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: hsl(30 6% 20%); }
+::-webkit-scrollbar-thumb { background: hsl(220 14% 86%); border-radius: 12px; border: 3px solid hsl(var(--background)); }
+::-webkit-scrollbar-thumb:hover { background: hsl(220 14% 76%); }

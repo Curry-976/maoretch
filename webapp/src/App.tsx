@@ -11,6 +11,9 @@ import Dashboard from "@/pages/Dashboard";
 import AddPhone from "@/pages/AddPhone";
 import Phones from "@/pages/Phones";
 import Clients from "@/pages/Clients";
+import Pipeline from "@/pages/Pipeline";
+import Sellers from "@/pages/Sellers";
+import Activity from "@/pages/Activity";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,10 +29,12 @@ const App = () => (
           <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
           <Route path="/verify-otp" element={<GuestRoute><VerifyOtp /></GuestRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/pipeline" element={<ProtectedRoute><Pipeline /></ProtectedRoute>} />
           <Route path="/add-phone" element={<ProtectedRoute><AddPhone /></ProtectedRoute>} />
           <Route path="/phones" element={<ProtectedRoute><Phones /></ProtectedRoute>} />
+          <Route path="/sellers" element={<ProtectedRoute><Sellers /></ProtectedRoute>} />
           <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/activity" element={<ProtectedRoute><Activity /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

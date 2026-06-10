@@ -1,21 +1,31 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
   Area,
   AreaChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  BarChart,
+  Bar,
+  CartesianGrid,
 } from "recharts";
-import { ArrowUpRight, Plus } from "lucide-react";
+import {
+  ArrowUpRight,
+  Plus,
+  Smartphone,
+  Users,
+  Tag,
+  CheckCircle2,
+  TrendingUp,
+  Kanban,
+  ArrowRight,
+} from "lucide-react";
 import { api } from "@/lib/api";
-import { DashboardStats } from "@/lib/types";
+import { Client, DashboardStats, Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
-import { StatStrip } from "@/components/ui/stat-strip";
 
 function eur(amount: number) {
   return new Intl.NumberFormat("fr-FR", {
@@ -26,11 +36,13 @@ function eur(amount: number) {
 }
 
 const tooltipStyle: React.CSSProperties = {
-  backgroundColor: "hsl(30 8% 9%)",
-  border: "0.5px solid hsl(30 6% 18%)",
-  borderRadius: 4,
+  background: "hsl(220 30% 10%)",
+  border: "1px solid hsl(220 25% 18%)",
+  borderRadius: 6,
+  padding: 8,
   fontSize: 12,
-  fontFamily: "DM Sans, sans-serif",
+  color: "hsl(40 20% 96%)",
+  fontFamily: "Switzer, sans-serif",
 };
 
 export default function Dashboard() {
@@ -38,6 +50,16 @@ export default function Dashboard() {
     queryKey: ["dashboard-stats"],
     queryFn: () => api.get<DashboardStats>("/api/dashboard/stats"),
     refetchInterval: 30000,
+  });
+
+  const { data: phones = [] } = useQuery({
+    queryKey: ["phones"],
+    queryFn: () => api.get<Phone[]>("/api/phones"),
+  });
+
+  const { data: clients = [] } = useQuery({
+    queryKey: ["clients"],
+    queryFn: () => api.get<Client[]>("/api/clients"),
   });
 
   if (isLoading) {
@@ -50,202 +72,429 @@ export default function Dashboard() {
     );
   }
 
-  const s = stats;
-  const isEmpty = !s || s.totalPhones === 0;
-  const monthlyData = s?.monthlyData ?? [];
-  const lastMonth = monthlyData[monthlyData.length - 1];
-  const prevMonth = monthlyData[monthlyData.length - 2];
+  const monthly = stats?.monthlyData ?? [];
+  const lastMonth = monthly[monthly.length - 1];
+  const prevMonth = monthly[monthly.length - 2];
   const delta =
     lastMonth && prevMonth && prevMonth.revenue > 0
       ? ((lastMonth.revenue - prevMonth.revenue) / prevMonth.revenue) * 100
       : null;
 
+  const recentPhones = phones.slice(0, 5);
+  const verifiedClients = clients.filter((c) => c.status === "verified").length;
+  const isEmpty = (stats?.totalPhones ?? 0) === 0;
+
+  const today = new Date().toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-8 md:py-10 space-y-14 max-w-[1400px]">
+      <div className="px-6 md:px-10 py-8 md:py-12 space-y-12 max-w-[1400px]">
         <PageHeader
-          num="01"
-          kicker="Tableau de bord"
-          title="Aujourd'hui,"
-          emphasis="votre activité"
-          subline={
-            <>
-              Données rafraîchies toutes les 30 secondes. Tout ce qui suit reflète ce
-              qui se passe maintenant.
-            </>
+          eyebrow={today}
+          title="Tableau de bord,"
+          italic="vue d'ensemble"
+          subline="Le pouls de votre activité — chiffre d'affaires, marges, inventaire, clients. Tout est synchronisé en temps réel."
+          actions={
+            <Link
+              to="/add-phone"
+              className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary"
+            >
+              <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+              Ajouter un téléphone
+            </Link>
           }
         />
 
-        {/* Hero KPI + ticker stats */}
-        <StatStrip
-          hero={{
-            kicker: "Chiffre d'affaires cumulé",
-            value: eur(s?.totalRevenue ?? 0),
-            emphasis: "neutral",
-            delta:
-              delta !== null && delta !== 0 ? (
-                <span
-                  className={`inline-flex items-center gap-1 ${
-                    delta > 0 ? "text-success" : "text-destructive"
-                  }`}
-                >
-                  <ArrowUpRight
-                    className={`w-3 h-3 ${delta < 0 ? "rotate-90" : ""}`}
-                  />
-                  {delta > 0 ? "+" : ""}
-                  {delta.toFixed(1)}% sur 30 j
-                </span>
-              ) : (
-                <span className="text-muted-foreground/60">— Aucune vente ce mois-ci</span>
-              ),
-            sub: lastMonth ? `Mois en cours · ${lastMonth.month}` : undefined,
-          }}
-          stats={[
-            {
-              kicker: "Bénéfice net",
-              value: eur(s?.totalProfit ?? 0),
-              sub: "CA − coûts",
-              emphasis: (s?.totalProfit ?? 0) > 0 ? "positive" : "neutral",
-            },
-            {
-              kicker: "Valeur stock",
-              value: eur(s?.totalInventoryValue ?? 0),
-              sub: `${s?.forSaleCount ?? 0} téléphones en vente`,
-              emphasis: "neutral",
-            },
-            {
-              kicker: "Inventaire",
-              value: String(s?.totalPhones ?? 0),
-              sub: `${s?.soldCount ?? 0} vendus · ${s?.forSaleCount ?? 0} en vente`,
-              emphasis: "neutral",
-            },
-          ]}
-        />
+        {/* === HERO ROW : 2 big cards === */}
+        <section className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-5">
+          {/* Revenue hero */}
+          <div className="card-soft rounded-lg p-7 lg:p-9 relative overflow-hidden">
+            <div
+              aria-hidden
+              className="absolute -top-16 -right-16 w-64 h-64 rounded-full pointer-events-none"
+              style={{
+                background: "radial-gradient(circle, hsl(213 78% 80% / 0.30), transparent 70%)",
+              }}
+            />
+            <div className="relative space-y-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                    Chiffre d'affaires
+                  </div>
+                  <div className="text-[11px] text-muted-foreground/70 mt-0.5">
+                    Cumul depuis le début · {monthly.length} mois suivis
+                  </div>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-primary" strokeWidth={2} />
+                </div>
+              </div>
 
-        {/* Divider */}
-        <div className="h-px bg-hairline" />
+              <div className="font-display tabular text-[clamp(3.4rem,6vw,5.5rem)] leading-none tracking-tightest text-foreground">
+                {eur(stats?.totalRevenue ?? 0)}
+              </div>
+
+              <div className="flex items-center gap-4 text-sm">
+                {delta !== null && delta !== 0 ? (
+                  <span
+                    className={`inline-flex items-center gap-1 font-medium ${
+                      delta > 0 ? "text-success" : "text-destructive"
+                    }`}
+                  >
+                    <ArrowUpRight
+                      className={`w-3.5 h-3.5 ${delta < 0 ? "rotate-90" : ""}`}
+                    />
+                    {delta > 0 ? "+" : ""}
+                    {delta.toFixed(1)}% sur 30 j
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground/60">Aucune vente ce mois-ci</span>
+                )}
+                <span className="text-muted-foreground">
+                  Bénéfice : <span className="text-foreground font-medium">{eur(stats?.totalProfit ?? 0)}</span>
+                </span>
+              </div>
+
+              {/* Mini sparkline */}
+              <div className="-mx-2 h-20">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={monthly} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="hsl(213 78% 42%)" stopOpacity={0.35} />
+                        <stop offset="100%" stopColor="hsl(213 78% 42%)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <Tooltip
+                      contentStyle={tooltipStyle}
+                      cursor={false}
+                      formatter={(v: number) => [eur(v), "Revenu"]}
+                      labelStyle={{ color: "hsl(40 20% 80%)" }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="hsl(213 78% 42%)"
+                      strokeWidth={2}
+                      fill="url(#heroGrad)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Stock value card */}
+          <div className="ink-surface rounded-lg p-7 relative overflow-hidden">
+            <div
+              aria-hidden
+              className="absolute inset-0 dot-grid opacity-10 pointer-events-none"
+            />
+            <div className="relative space-y-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-ink-foreground/60 font-medium">
+                    Valeur du stock
+                  </div>
+                  <div className="text-[11px] text-ink-foreground/40 mt-0.5">
+                    Capital immobilisé
+                  </div>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Tag className="w-4 h-4 text-primary" strokeWidth={2} />
+                </div>
+              </div>
+
+              <div className="font-display tabular text-[clamp(2.6rem,4vw,3.6rem)] leading-none tracking-tightest text-ink-foreground">
+                {eur(stats?.totalInventoryValue ?? 0)}
+              </div>
+
+              <div className="space-y-3 pt-2 border-t border-sidebar-border">
+                <Row label="Téléphones en vente" value={String(stats?.forSaleCount ?? 0)} />
+                <Row label="Vendus à ce jour" value={String(stats?.soldCount ?? 0)} />
+                <Row label="Total enregistré" value={String(stats?.totalPhones ?? 0)} />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* === SECONDARY STAT TILES === */}
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Tile
+            icon={<Smartphone className="w-3.5 h-3.5" />}
+            label="Téléphones"
+            value={String(stats?.totalPhones ?? 0)}
+            sub={`${stats?.forSaleCount ?? 0} en vente`}
+            href="/phones"
+          />
+          <Tile
+            icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+            label="Vendus"
+            value={String(stats?.soldCount ?? 0)}
+            sub="Cumul"
+            href="/phones"
+          />
+          <Tile
+            icon={<Users className="w-3.5 h-3.5" />}
+            label="Clients"
+            value={String(clients.length)}
+            sub={`${verifiedClients} vérifié${verifiedClients > 1 ? "s" : ""}`}
+            href="/clients"
+          />
+          <Tile
+            icon={<Kanban className="w-3.5 h-3.5" />}
+            label="Pipeline actif"
+            value={String(stats?.forSaleCount ?? 0)}
+            sub="Téléphones en mouvement"
+            href="/pipeline"
+            badge="Nouveau"
+          />
+        </section>
 
         {isEmpty ? (
-          <section className="space-y-6">
-            <div className="font-mono-kicker text-[10px] text-muted-foreground">
-              02 — Premier pas
+          <section className="card-soft rounded-lg p-12 text-center space-y-6 dot-grid">
+            <div className="inline-flex w-14 h-14 rounded-full bg-primary/10 items-center justify-center mx-auto">
+              <Plus className="w-6 h-6 text-primary" strokeWidth={2} />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-12 items-end">
-              <div className="space-y-5">
-                <h2 className="font-heading text-4xl text-foreground italic leading-[1.05]">
-                  Rien à afficher
-                  <span className="not-italic text-primary">.</span> Pas encore.
-                </h2>
-                <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
-                  Le tableau de bord s'anime dès le premier téléphone enregistré.
-                  Ajoutez un appareil acheté chez un vendeur — modèle, état, prix —
-                  et les graphiques se peuplent en temps réel.
-                </p>
-                <Link
-                  to="/add-phone"
-                  className="group inline-flex items-center gap-3 px-5 py-3 border hairline hover:border-primary text-foreground text-sm font-medium transition-all duration-500 ease-out-expo"
-                >
-                  <Plus className="w-3.5 h-3.5" strokeWidth={1.5} />
-                  Enregistrer le premier téléphone
-                  <span className="font-mono-kicker text-[9px] text-muted-foreground group-hover:translate-x-1 transition-transform duration-500 ease-out-expo">
-                    →
-                  </span>
-                </Link>
-              </div>
-              <div className="relative aspect-square max-w-[280px] ml-auto opacity-30">
-                <svg viewBox="0 0 240 240" fill="none" aria-hidden className="w-full h-full text-foreground">
-                  <rect x="80" y="30" width="80" height="170" rx="14" stroke="currentColor" strokeWidth="0.8" />
-                  <g stroke="currentColor" strokeWidth="0.5" strokeLinecap="round">
-                    <line x1="120" y1="80" x2="120" y2="160" />
-                    <line x1="85" y1="100" x2="155" y2="140" />
-                    <line x1="85" y1="140" x2="155" y2="100" />
-                    <line x1="78" y1="120" x2="162" y2="120" />
-                  </g>
-                  <circle cx="120" cy="120" r="3" fill="currentColor" />
-                </svg>
-              </div>
+            <div className="space-y-2 max-w-md mx-auto">
+              <h3 className="font-display text-3xl text-foreground tracking-tightest">
+                Démarrons<span className="text-primary">.</span>
+              </h3>
+              <p className="text-[15px] text-muted-foreground">
+                Aucun téléphone enregistré pour l'instant. Ajoutez votre premier appareil
+                et le tableau de bord s'anime instantanément.
+              </p>
             </div>
+            <Link
+              to="/add-phone"
+              className="btn-magnetic inline-flex items-center gap-2 px-5 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-primary"
+            >
+              <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+              Enregistrer un téléphone
+            </Link>
           </section>
         ) : (
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-            {/* Revenue */}
-            <div className="space-y-4">
-              <div className="flex items-baseline justify-between">
-                <div className="font-mono-kicker text-[10px] text-muted-foreground">
-                  Chiffre d'affaires
+          <>
+            {/* === CHARTS ROW === */}
+            <section className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+              <div className="card-soft rounded-lg p-6 lg:col-span-3">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                      Chiffre d'affaires
+                    </div>
+                    <div className="font-display text-xl text-foreground mt-0.5">6 derniers mois</div>
+                  </div>
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <span className="w-2 h-2 rounded-full bg-primary" />
+                    Revenus
+                  </div>
                 </div>
-                <div className="text-[11px] text-muted-foreground/70 tabular">6 derniers mois</div>
+                <ResponsiveContainer width="100%" height={240}>
+                  <AreaChart data={monthly} margin={{ top: 10, right: 0, left: -10, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="hsl(213 78% 42%)" stopOpacity={0.30} />
+                        <stop offset="100%" stopColor="hsl(213 78% 42%)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="2 2" stroke="hsl(220 14% 92%)" vertical={false} />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fill: "hsl(220 8% 42%)", fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: "hsl(220 8% 42%)", fontSize: 10 }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`)}
+                    />
+                    <Tooltip
+                      contentStyle={tooltipStyle}
+                      cursor={{ stroke: "hsl(213 78% 42%)", strokeOpacity: 0.3 }}
+                      formatter={(v: number) => [eur(v), "Revenu"]}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="hsl(213 78% 42%)"
+                      strokeWidth={2}
+                      fill="url(#revGrad)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
-              <ResponsiveContainer width="100%" height={260}>
-                <AreaChart data={monthlyData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(213 78% 48%)" stopOpacity={0.35} />
-                      <stop offset="95%" stopColor="hsl(213 78% 48%)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis
-                    dataKey="month"
-                    tick={{ fill: "hsl(30 8% 55%)", fontSize: 11, fontFamily: "JetBrains Mono" }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fill: "hsl(30 8% 55%)", fontSize: 10, fontFamily: "JetBrains Mono" }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`)}
-                  />
-                  <Tooltip
-                    contentStyle={tooltipStyle}
-                    cursor={{ stroke: "hsl(213 78% 48%)", strokeOpacity: 0.3, strokeWidth: 1 }}
-                    formatter={(value: number) => [eur(value), "Revenu"]}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="hsl(213 78% 48%)"
-                    strokeWidth={1.5}
-                    fill="url(#revenueGrad)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
 
-            {/* Profit */}
-            <div className="space-y-4">
-              <div className="flex items-baseline justify-between">
-                <div className="font-mono-kicker text-[10px] text-muted-foreground">
-                  Bénéfice mensuel
+              <div className="card-soft rounded-lg p-6 lg:col-span-2">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                      Bénéfice mensuel
+                    </div>
+                    <div className="font-display text-xl text-foreground mt-0.5">Évolution</div>
+                  </div>
                 </div>
-                <div className="text-[11px] text-muted-foreground/70 tabular">6 derniers mois</div>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={monthly} margin={{ top: 10, right: 0, left: -10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="2 2" stroke="hsl(220 14% 92%)" vertical={false} />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fill: "hsl(220 8% 42%)", fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: "hsl(220 8% 42%)", fontSize: 10 }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`)}
+                    />
+                    <Tooltip
+                      contentStyle={tooltipStyle}
+                      cursor={{ fill: "hsl(220 14% 95% / 0.5)" }}
+                      formatter={(v: number) => [eur(v), "Bénéfice"]}
+                    />
+                    <Bar dataKey="profit" fill="hsl(220 30% 18%)" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={monthlyData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-                  <XAxis
-                    dataKey="month"
-                    tick={{ fill: "hsl(30 8% 55%)", fontSize: 11, fontFamily: "JetBrains Mono" }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fill: "hsl(30 8% 55%)", fontSize: 10, fontFamily: "JetBrains Mono" }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`)}
-                  />
-                  <Tooltip
-                    contentStyle={tooltipStyle}
-                    cursor={{ fill: "hsl(30 6% 14% / 0.4)" }}
-                    formatter={(value: number) => [eur(value), "Bénéfice"]}
-                  />
-                  <Bar dataKey="profit" fill="hsl(36 30% 88%)" radius={[1, 1, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </section>
+            </section>
+
+            {/* === RECENT ACTIVITY === */}
+            {recentPhones.length > 0 && (
+              <section className="card-soft rounded-lg overflow-hidden">
+                <div className="flex items-center justify-between p-6 border-b hairline-border">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                      Mouvements récents
+                    </div>
+                    <div className="font-display text-xl text-foreground mt-0.5">
+                      Derniers téléphones
+                    </div>
+                  </div>
+                  <Link
+                    to="/phones"
+                    className="group inline-flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Tout voir
+                    <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                </div>
+                <div className="divide-y hairline-border">
+                  {recentPhones.map((p) => {
+                    const margin = p.resalePrice - p.purchasePrice - p.repairPrice;
+                    return (
+                      <Link
+                        key={p.id}
+                        to="/phones"
+                        className="flex items-center gap-4 p-4 hover:bg-secondary/40 transition-colors"
+                      >
+                        <div className="w-11 h-11 rounded-md bg-secondary border hairline-border overflow-hidden flex-shrink-0">
+                          {p.photoUrl ? (
+                            <img src={p.photoUrl} alt={p.model} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground/50">
+                              <Smartphone className="w-4 h-4" strokeWidth={1.5} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-baseline gap-2">
+                            <span className="font-medium text-foreground truncate">{p.model}</span>
+                            <span
+                              className={`text-[10px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded ${
+                                p.status === "sold"
+                                  ? "bg-success/10 text-success"
+                                  : "bg-primary/10 text-primary"
+                              }`}
+                            >
+                              {p.status === "sold" ? "Vendu" : "En vente"}
+                            </span>
+                          </div>
+                          <div className="text-[12px] text-muted-foreground mt-0.5">
+                            {p.seller.firstName} {p.seller.lastName} · {p.seller.village}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div
+                            className={`font-display tabular text-lg ${
+                              margin >= 0 ? "text-foreground" : "text-destructive"
+                            }`}
+                          >
+                            {margin >= 0 ? "+" : ""}
+                            {eur(margin)}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Marge</div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+          </>
         )}
       </div>
     </Layout>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between text-[13px]">
+      <span className="text-ink-foreground/60">{label}</span>
+      <span className="font-medium text-ink-foreground tabular">{value}</span>
+    </div>
+  );
+}
+
+function Tile({
+  icon,
+  label,
+  value,
+  sub,
+  href,
+  badge,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  sub: string;
+  href: string;
+  badge?: string;
+}) {
+  return (
+    <Link
+      to={href}
+      className="card-soft rounded-lg p-5 group hover:-translate-y-0.5 hover:border-primary/40 transition-all duration-500 ease-out-expo relative"
+    >
+      <div className="flex items-start justify-between">
+        <div className="w-7 h-7 rounded-md bg-primary/10 text-primary flex items-center justify-center">
+          {icon}
+        </div>
+        {badge && (
+          <span className="text-[8px] uppercase tracking-wider px-1.5 py-0.5 bg-primary text-primary-foreground font-medium rounded">
+            {badge}
+          </span>
+        )}
+      </div>
+      <div className="mt-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+        {label}
+      </div>
+      <div className="mt-1 font-display tabular text-3xl text-foreground tracking-tightest">{value}</div>
+      <div className="mt-1 text-[11px] text-muted-foreground">{sub}</div>
+      <ArrowUpRight
+        className="absolute top-5 right-5 w-3 h-3 text-muted-foreground/30 opacity-0 group-hover:opacity-100 group-hover:text-foreground transition-all duration-500"
+        strokeWidth={2}
+      />
+    </Link>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Mail } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { BrandLogo } from "@/components/Brand";
 
@@ -14,6 +14,7 @@ export default function VerifyOtp() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
+  const [sent, setSent] = useState(false);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -81,105 +82,122 @@ export default function VerifyOtp() {
 
   const resend = async () => {
     setResending(true);
+    setSent(false);
     try {
       const { error } = await authClient.emailOtp.sendVerificationOtp({
         email,
         type: "sign-in",
       });
       if (error) setError(error.message || "Échec de l'envoi");
+      else setSent(true);
     } finally {
       setResending(false);
+      setTimeout(() => setSent(false), 4000);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-background">
-      {/* Grid background */}
       <div
         aria-hidden
-        className="absolute inset-0 pointer-events-none opacity-[0.04]"
+        className="absolute inset-0 dot-grid opacity-40 pointer-events-none"
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage:
-            "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
-          backgroundSize: "80px 80px",
+          background:
+            "radial-gradient(60% 50% at 50% 30%, hsl(213 78% 75% / 0.18), transparent 60%)",
         }}
       />
-      <div className="w-full max-w-[480px] space-y-12 relative z-10">
-        {/* Top — back + logo */}
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => navigate("/login")}
-            className="flex items-center gap-2 text-[11px] font-mono-kicker text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-3 h-3" strokeWidth={1.5} />
-            Retour
-          </button>
-          <div className="paper-tile rounded-sm px-3 py-2">
-            <BrandLogo size="sm" />
-          </div>
-        </div>
 
-        <div className="space-y-3">
-          <div className="font-mono-kicker text-[10px] text-muted-foreground">
-            02 — Vérification
-          </div>
-          <h1 className="font-heading text-5xl text-foreground italic leading-none">
-            Le code<span className="text-primary not-italic">.</span>
-          </h1>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Nous l'avons envoyé à{" "}
-            <span className="text-foreground font-medium not-italic">{email}</span>.
-            Valable 10 minutes.
-          </p>
-        </div>
+      <div className="w-full max-w-[440px] relative z-10">
+        <button
+          onClick={() => navigate("/login")}
+          className="mb-8 inline-flex items-center gap-2 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-3 h-3" strokeWidth={2} />
+          Retour
+        </button>
 
-        {/* OTP boxes */}
-        <div className="space-y-6">
-          <div className="font-mono-kicker text-[9px] text-muted-foreground">
-            6 chiffres
-          </div>
-          <div className="grid grid-cols-6 gap-2 sm:gap-3">
-            {digits.map((d, i) => (
-              <input
-                key={i}
-                ref={(el) => (inputs.current[i] = el)}
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                maxLength={1}
-                value={d}
-                onChange={(e) => update(i, e.target.value)}
-                onKeyDown={(e) => handleKey(i, e)}
-                onPaste={handlePaste}
-                disabled={loading}
-                className="w-full aspect-[3/4] bg-transparent border hairline border-b-foreground/40 focus:border-primary text-center font-heading text-4xl text-foreground italic outline-none transition-all duration-300 ease-out-expo focus:bg-secondary/40 disabled:opacity-50"
-              />
-            ))}
-          </div>
-
-          {loading && (
-            <div className="flex items-center gap-2 text-[11px] font-mono-kicker text-muted-foreground">
-              <Loader2 className="w-3 h-3 animate-spin" />
-              Vérification…
+        <div className="card-elevated bg-card rounded-lg p-8 lg:p-10 space-y-8">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                Vérification
+              </div>
+              <h1 className="font-display text-4xl text-foreground tracking-tightest mt-2">
+                Le code<span className="text-primary">.</span>
+              </h1>
             </div>
-          )}
-
-          {error && (
-            <div className="border-l-2 border-destructive pl-3 py-1 text-xs text-destructive font-mono-kicker lowercase first-letter:uppercase tracking-normal">
-              {error}
+            <div className="paper-tile rounded-md p-2.5">
+              <BrandLogo size="sm" />
             </div>
-          )}
+          </div>
+
+          <div className="flex items-start gap-3 p-3.5 bg-secondary/40 rounded-md">
+            <Mail className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" strokeWidth={1.8} />
+            <div className="text-[12px] text-muted-foreground leading-relaxed">
+              Envoyé à <span className="text-foreground font-medium">{email}</span>.
+              Valable 10 minutes.
+            </div>
+          </div>
+
+          {/* OTP boxes */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-6 gap-2">
+              {digits.map((d, i) => (
+                <input
+                  key={i}
+                  ref={(el) => (inputs.current[i] = el)}
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={1}
+                  value={d}
+                  onChange={(e) => update(i, e.target.value)}
+                  onKeyDown={(e) => handleKey(i, e)}
+                  onPaste={handlePaste}
+                  disabled={loading}
+                  className="w-full aspect-square bg-background border-2 hairline-border focus:border-primary focus:ring-4 focus:ring-primary/15 text-center font-display tabular text-3xl text-foreground rounded-md outline-none transition-all duration-300 ease-out-expo disabled:opacity-50"
+                />
+              ))}
+            </div>
+
+            {loading && (
+              <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Vérification du code…
+              </div>
+            )}
+
+            {error && (
+              <div className="px-3 py-2.5 bg-destructive/8 border border-destructive/20 rounded-md text-destructive text-[12px]">
+                {error}
+              </div>
+            )}
+
+            {sent && (
+              <div className="px-3 py-2.5 bg-success/8 border border-success/20 rounded-md text-success text-[12px]">
+                Nouveau code envoyé.
+              </div>
+            )}
+          </div>
+
+          <div className="pt-5 border-t hairline-border flex items-center justify-between text-[12px]">
+            <span className="text-muted-foreground">Code non reçu ?</span>
+            <button
+              onClick={resend}
+              disabled={resending || loading}
+              className="font-medium text-foreground hover:text-primary transition-colors disabled:opacity-50"
+            >
+              {resending ? "Envoi…" : "Renvoyer le code"}
+            </button>
+          </div>
         </div>
 
-        <div className="pt-6 border-t hairline flex items-center justify-between">
-          <span className="text-[11px] text-muted-foreground">Pas reçu ?</span>
-          <button
-            onClick={resend}
-            disabled={resending || loading}
-            className="text-[11px] font-mono-kicker text-foreground hover:text-primary transition-colors disabled:opacity-50"
-          >
-            {resending ? "Renvoi en cours…" : "Renvoyer le code ↺"}
-          </button>
+        <div className="text-center text-[11px] text-muted-foreground/60 mt-6">
+          © Maore-Tech CRM 2026
         </div>
       </div>
     </div>

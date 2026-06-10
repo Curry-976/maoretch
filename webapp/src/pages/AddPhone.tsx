@@ -2,7 +2,20 @@ import { useState, useRef, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Camera, ChevronDown, Loader2, X, Check, Plus } from "lucide-react";
+import {
+  Camera,
+  ChevronDown,
+  Loader2,
+  X,
+  Check,
+  FileSignature,
+  User,
+  Smartphone as SmartphoneIcon,
+  DollarSign,
+  Mail,
+  Phone as PhoneIcon,
+  MapPin,
+} from "lucide-react";
 import { api } from "@/lib/api";
 import { Seller, Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
@@ -156,34 +169,28 @@ export default function AddPhone() {
 
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-8 md:py-10 space-y-14 max-w-[1100px]">
+      <div className="px-6 md:px-10 py-8 md:py-12 space-y-10 max-w-[1100px]">
         <PageHeader
-          num="02"
-          kicker="Nouvel appareil"
+          eyebrow="Nouvel appareil"
           title="Enregistrer un"
-          emphasis="téléphone"
-          subline={
-            <>
-              Démarchage, état, prix, marge — tout tient dans une seule passe. Si le
-              vendeur est nouveau, vous recueillez aussi sa signature de cession.
-            </>
-          }
+          italic="téléphone"
+          subline="Démarchage, état, prix, marge — tout tient dans une seule passe. Si le vendeur est nouveau, vous recueillez aussi sa signature de cession."
         />
 
-        <form onSubmit={handleSubmit} className="space-y-16">
+        <form onSubmit={handleSubmit} className="space-y-8">
           {/* Section 01 — Vendeur */}
-          <Section num="01" kicker="Vendeur" title="Qui cède l'appareil ?">
-            <div className="flex gap-0 border hairline w-fit">
+          <Section icon={<User className="w-4 h-4" />} number="01" title="Vendeur" subtitle="Qui cède l'appareil ?">
+            <div className="inline-flex p-1 bg-secondary/50 border hairline-border rounded-md">
               {(["new", "existing"] as SellerMode[]).map((mode) => (
                 <button
                   key={mode}
                   type="button"
                   onClick={() => setSellerMode(mode)}
-                  className={`px-5 py-2.5 text-[11px] font-mono-kicker transition-all duration-300 ease-out-expo ${
+                  className={`px-4 py-2 rounded text-[12px] font-medium transition-all duration-300 ease-out-expo ${
                     sellerMode === mode
-                      ? "bg-foreground text-background"
+                      ? "ink-surface shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
-                  } ${mode === "existing" ? "border-l hairline" : ""}`}
+                  }`}
                 >
                   {mode === "new" ? "Nouveau vendeur" : "Vendeur existant"}
                 </button>
@@ -192,95 +199,90 @@ export default function AddPhone() {
 
             {sellerMode === "existing" ? (
               <div className="max-w-md">
-                <FieldLabel>Sélectionner un vendeur</FieldLabel>
+                <Label>Sélectionner un vendeur</Label>
                 <div className="relative">
                   <select
                     value={selectedSellerId}
                     onChange={(e) => setSelectedSellerId(e.target.value)}
                     required
-                    className="w-full px-0 py-3 bg-transparent border-0 border-b hairline focus:outline-none focus:border-primary text-foreground appearance-none text-sm transition-colors"
+                    className="w-full px-3.5 py-2.5 bg-background border hairline-border rounded-md text-foreground text-sm appearance-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all"
                   >
-                    <option value="" className="bg-background">— Choisir un vendeur —</option>
+                    <option value="">— Choisir un vendeur —</option>
                     {sellers.map((s) => (
-                      <option key={s.id} value={s.id} className="bg-background">
+                      <option key={s.id} value={s.id}>
                         {s.firstName} {s.lastName} ({s.village})
                       </option>
                     ))}
                   </select>
                   <ChevronDown
-                    strokeWidth={1.2}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none"
+                    strokeWidth={1.8}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none"
                   />
                 </div>
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
-                  <UnderlinedField
-                    label="Prénom *"
-                    value={firstName}
-                    onChange={setFirstName}
-                    placeholder="Mamadou"
-                  />
-                  <UnderlinedField
-                    label="Nom *"
-                    value={lastName}
-                    onChange={setLastName}
-                    placeholder="Diallo"
-                  />
-                  <UnderlinedField
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <Input label="Prénom *" value={firstName} onChange={setFirstName} placeholder="Mamadou" />
+                  <Input label="Nom *" value={lastName} onChange={setLastName} placeholder="Diallo" />
+                  <Input
                     label="Village *"
                     value={village}
                     onChange={setVillage}
                     placeholder="Conakry"
+                    icon={<MapPin className="w-3 h-3" />}
                   />
-                  <UnderlinedField
+                  <Input
                     label="Email *"
                     value={email}
                     onChange={setEmail}
                     type="email"
                     placeholder="vendeur@exemple.com"
+                    icon={<Mail className="w-3 h-3" />}
                   />
-                  <UnderlinedField
-                    label="Téléphone *"
-                    value={sellerPhone}
-                    onChange={setSellerPhone}
-                    type="tel"
-                    placeholder="+224 6XX XX XX XX"
-                  />
+                  <div className="sm:col-span-2">
+                    <Input
+                      label="Téléphone *"
+                      value={sellerPhone}
+                      onChange={setSellerPhone}
+                      type="tel"
+                      placeholder="+224 6XX XX XX XX"
+                      icon={<PhoneIcon className="w-3 h-3" />}
+                    />
+                  </div>
                 </div>
 
                 {/* Contract */}
-                <div className="pt-10 mt-10 border-t hairline space-y-6">
-                  <div className="flex items-baseline gap-3">
-                    <div className="font-mono-kicker text-[10px] text-muted-foreground">
+                <div className="pt-8 mt-8 border-t hairline-border space-y-5">
+                  <div className="flex items-center gap-2">
+                    <FileSignature className="w-4 h-4 text-primary" strokeWidth={1.8} />
+                    <h3 className="font-display text-lg text-foreground tracking-tight">
                       Contrat de cession
-                    </div>
-                    <span className="h-px flex-1 bg-hairline max-w-[160px]" />
+                    </h3>
                   </div>
 
-                  <article className="paper-tile rounded-sm p-8 max-w-[640px]">
-                    <div className="font-mono-kicker text-[9px] text-paper-foreground/60 mb-4">
-                      Acte de cession — Maore-Tech
+                  <article className="paper-tile rounded-md p-8 max-w-3xl">
+                    <div className="text-[9px] uppercase tracking-[0.18em] text-paper-foreground/50 font-medium mb-4">
+                      Acte de cession · Maore-Tech
                     </div>
-                    <div className="space-y-4 text-[14px] text-paper-foreground leading-relaxed">
+                    <div className="space-y-3 text-[14px] text-paper-foreground leading-relaxed">
                       <p>
                         Le vendeur soussigné,{" "}
-                        <strong className="font-medium">
+                        <strong className="font-semibold">
                           {firstName || "[Prénom]"} {lastName || "[Nom]"}
                         </strong>
                         , domicilié à{" "}
-                        <strong className="font-medium">{village || "[Village]"}</strong>,
+                        <strong className="font-semibold">{village || "[Village]"}</strong>,
                         joignable au{" "}
-                        <strong className="font-medium">{sellerPhone || "[téléphone]"}</strong>
-                        {email ? (
+                        <strong className="font-semibold">{sellerPhone || "[téléphone]"}</strong>
+                        {email && (
                           <>
                             {" "}
                             et à l'adresse{" "}
-                            <strong className="font-medium">{email}</strong>
+                            <strong className="font-semibold">{email}</strong>
                           </>
-                        ) : null}
-                        , déclare céder à <em>Maore-Tech</em> le téléphone décrit ci-après,
+                        )}
+                        , déclare céder à <em className="font-italic">Maore-Tech</em> le téléphone décrit ci-après,
                         en pleine propriété, libre de tout gage.
                       </p>
                       <p>
@@ -291,20 +293,20 @@ export default function AddPhone() {
                     </div>
                   </article>
 
-                  <label className="flex items-start gap-3 text-sm text-foreground cursor-pointer select-none max-w-[640px]">
+                  <label className="flex items-start gap-3 text-sm text-foreground cursor-pointer select-none max-w-3xl">
                     <input
                       type="checkbox"
                       checked={contractAccepted}
                       onChange={(e) => setContractAccepted(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 rounded-none border-foreground/30 accent-primary"
+                      className="mt-0.5 w-4 h-4 rounded accent-primary"
                     />
                     <span className="leading-relaxed">
                       Le vendeur a lu et accepte les termes du contrat ci-dessus.
                     </span>
                   </label>
 
-                  <div className="max-w-[640px]">
-                    <FieldLabel>Signature du vendeur *</FieldLabel>
+                  <div className="max-w-3xl">
+                    <Label>Signature du vendeur *</Label>
                     <SignaturePad value={signature} onChange={setSignature} />
                   </div>
                 </div>
@@ -313,10 +315,10 @@ export default function AddPhone() {
           </Section>
 
           {/* Section 02 — Appareil */}
-          <Section num="02" kicker="Appareil" title="Le téléphone, en détail.">
-            <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-12">
-              <div className="space-y-8">
-                <UnderlinedField
+          <Section icon={<SmartphoneIcon className="w-4 h-4" />} number="02" title="Appareil" subtitle="Le téléphone, en détail.">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-8">
+              <div className="space-y-5">
+                <Input
                   label="Modèle *"
                   value={model}
                   onChange={setModel}
@@ -324,18 +326,18 @@ export default function AddPhone() {
                 />
 
                 <div>
-                  <FieldLabel>État *</FieldLabel>
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-0 border hairline">
-                    {CONDITIONS.map((c, i) => (
+                  <Label>État *</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                    {CONDITIONS.map((c) => (
                       <button
                         key={c.value}
                         type="button"
                         onClick={() => setCondition(c.value)}
-                        className={`py-3 px-2 text-[10px] font-mono-kicker transition-all duration-300 ease-out-expo ${
+                        className={`py-2.5 px-2 rounded-md text-[12px] font-medium border transition-all duration-300 ease-out-expo ${
                           condition === c.value
-                            ? "bg-foreground text-background"
-                            : "text-muted-foreground hover:text-foreground"
-                        } ${i > 0 ? "border-l hairline" : ""}`}
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-card border-hairline text-muted-foreground hover:text-foreground hover:border-foreground/30"
+                        }`}
                       >
                         {c.label}
                       </button>
@@ -344,33 +346,32 @@ export default function AddPhone() {
                 </div>
               </div>
 
-              {/* Photo */}
               <div>
-                <FieldLabel>Photo (optionnelle)</FieldLabel>
+                <Label>Photo (optionnelle)</Label>
                 {photoUrl ? (
-                  <div className="relative w-full max-w-[280px] aspect-square border hairline">
+                  <div className="relative aspect-square max-w-[260px]">
                     <img
                       src={photoUrl}
                       alt="Téléphone"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover rounded-md border hairline-border"
                     />
                     <button
                       type="button"
                       onClick={() => setPhotoUrl("")}
-                      className="absolute top-2 right-2 w-7 h-7 bg-background/90 border hairline flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-all duration-300"
+                      className="absolute top-2 right-2 w-7 h-7 bg-background border hairline-border rounded-full flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-all"
                       aria-label="Supprimer la photo"
                     >
-                      <X className="w-3 h-3" strokeWidth={1.5} />
+                      <X className="w-3 h-3" strokeWidth={2} />
                     </button>
                   </div>
                 ) : (
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="group w-full max-w-[280px] aspect-square border hairline border-dashed flex flex-col items-center justify-center gap-3 text-muted-foreground hover:border-foreground/40 hover:text-foreground transition-all duration-500 ease-out-expo"
+                    className="group aspect-square max-w-[260px] w-full border border-dashed border-hairline rounded-md flex flex-col items-center justify-center gap-3 text-muted-foreground hover:border-primary hover:bg-primary/5 transition-all duration-500 ease-out-expo bg-card"
                   >
-                    <Camera className="w-5 h-5" strokeWidth={1.2} />
-                    <span className="font-mono-kicker text-[10px]">
+                    <Camera className="w-6 h-6 group-hover:text-primary transition-colors" strokeWidth={1.5} />
+                    <span className="text-[11px] uppercase tracking-wider">
                       Ajouter une photo
                     </span>
                   </button>
@@ -388,23 +389,23 @@ export default function AddPhone() {
           </Section>
 
           {/* Section 03 — Prix */}
-          <Section num="03" kicker="Économie" title="Le prix de l'opération.">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-10 gap-y-8 max-w-[720px]">
-              <UnderlinedField
+          <Section icon={<DollarSign className="w-4 h-4" />} number="03" title="Économie" subtitle="Le prix de l'opération.">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-3xl">
+              <Input
                 label="Prix d'achat (€) *"
                 value={purchasePrice}
                 onChange={setPurchasePrice}
                 type="number"
                 placeholder="0"
               />
-              <UnderlinedField
+              <Input
                 label="Réparation (€)"
                 value={repairPrice}
                 onChange={setRepairPrice}
                 type="number"
                 placeholder="0"
               />
-              <UnderlinedField
+              <Input
                 label="Revente (€) *"
                 value={resalePrice}
                 onChange={setResalePrice}
@@ -414,43 +415,56 @@ export default function AddPhone() {
             </div>
 
             {margin !== null && (
-              <div className="border-t hairline pt-8 max-w-[720px]">
-                <div className="font-mono-kicker text-[10px] text-muted-foreground mb-3">
-                  Marge estimée
-                </div>
-                <div className="flex items-baseline gap-4">
-                  <span
-                    className={`font-heading text-6xl italic tabular leading-none ${
-                      margin >= 0 ? "text-foreground" : "text-destructive"
+              <div
+                className={`mt-6 card-soft rounded-md p-6 max-w-3xl flex items-center justify-between gap-4 ${
+                  margin >= 0 ? "bg-success/5 border-success/20" : "bg-destructive/5 border-destructive/20"
+                }`}
+              >
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                    Marge estimée
+                  </div>
+                  <div
+                    className={`font-display tabular text-4xl mt-1 ${
+                      margin >= 0 ? "text-success" : "text-destructive"
                     }`}
                   >
                     {margin >= 0 ? "+" : ""}
                     {eur(margin)}
-                  </span>
-                  {margin < 0 && (
-                    <span className="text-xs text-destructive/80">
-                      Prix de revente sous le coût total.
-                    </span>
-                  )}
+                  </div>
                 </div>
+                {margin < 0 && (
+                  <span className="text-xs text-destructive/80 max-w-[200px] text-right">
+                    Le prix de revente est sous le coût total.
+                  </span>
+                )}
               </div>
             )}
           </Section>
 
-          {/* Submit */}
-          <div className="pt-8 border-t hairline flex justify-end">
+          {/* Submit bar */}
+          <div className="sticky bottom-0 -mx-6 md:-mx-10 px-6 md:px-10 py-5 bg-background/90 backdrop-blur-md border-t hairline-border flex items-center justify-between gap-4">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="px-4 py-2.5 text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Annuler
+            </button>
             <button
               type="submit"
               disabled={createMutation.isPending}
-              className="group inline-flex items-center gap-3 px-6 py-3.5 bg-foreground text-background text-sm font-medium hover:bg-foreground/95 disabled:opacity-40 transition-all duration-500 ease-out-expo"
+              className="btn-magnetic inline-flex items-center gap-2 px-6 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-primary disabled:opacity-40 shadow-lg shadow-ink/20"
             >
               {createMutation.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Enregistrement…
+                </>
               ) : (
                 <>
-                  <Check className="w-4 h-4" strokeWidth={1.5} />
+                  <Check className="w-4 h-4" strokeWidth={2} />
                   Enregistrer le téléphone
-                  <span className="font-mono-kicker text-[9px] opacity-50">↵</span>
                 </>
               )}
             </button>
@@ -462,60 +476,86 @@ export default function AddPhone() {
 }
 
 function Section({
-  num,
-  kicker,
+  icon,
+  number,
   title,
+  subtitle,
   children,
 }: {
-  num: string;
-  kicker: string;
+  icon: ReactNode;
+  number: string;
   title: string;
+  subtitle: string;
   children: ReactNode;
 }) {
   return (
-    <section className="space-y-8">
-      <header className="flex items-baseline gap-4">
-        <span className="font-mono-kicker text-[10px] text-muted-foreground">
-          {num} — {kicker}
-        </span>
-        <span className="h-px flex-1 bg-hairline max-w-[200px]" />
-        <h2 className="font-heading text-3xl text-foreground italic">{title}</h2>
+    <section className="card-soft rounded-lg p-6 lg:p-8 space-y-6">
+      <header className="flex items-center gap-4 pb-6 border-b hairline-border">
+        <div className="w-9 h-9 rounded-md bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+          {icon}
+        </div>
+        <div className="flex-1">
+          <div className="flex items-baseline gap-2">
+            <span className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground font-medium tabular">
+              {number}
+            </span>
+            <span className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+              {title}
+            </span>
+          </div>
+          <h2 className="font-display text-2xl text-foreground tracking-tight">
+            {subtitle}
+          </h2>
+        </div>
       </header>
-      <div className="space-y-6">{children}</div>
+      {children}
     </section>
   );
 }
 
-function FieldLabel({ children }: { children: ReactNode }) {
+function Label({ children }: { children: ReactNode }) {
   return (
-    <div className="font-mono-kicker text-[9px] text-muted-foreground mb-2">{children}</div>
+    <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium mb-2">
+      {children}
+    </div>
   );
 }
 
-function UnderlinedField({
+function Input({
   label,
   value,
   onChange,
   type = "text",
   placeholder,
+  icon,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   type?: string;
   placeholder?: string;
+  icon?: ReactNode;
 }) {
   return (
     <div>
-      <FieldLabel>{label}</FieldLabel>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        min={type === "number" ? 0 : undefined}
-        className="w-full px-0 py-2 bg-transparent border-0 border-b hairline focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground/40 text-sm transition-colors duration-300 ease-out-expo"
-      />
+      <Label>{label}</Label>
+      <div className="relative">
+        {icon && (
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+            {icon}
+          </div>
+        )}
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          min={type === "number" ? 0 : undefined}
+          className={`w-full ${
+            icon ? "pl-9" : "pl-3.5"
+          } pr-3.5 py-2.5 bg-background border hairline-border rounded-md text-foreground text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all duration-300`}
+        />
+      </div>
     </div>
   );
 }

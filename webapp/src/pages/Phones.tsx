@@ -10,12 +10,12 @@ import {
   ChevronDown,
   Plus,
   Smartphone as SmartphoneIcon,
+  Filter,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
-import { StatStrip } from "@/components/ui/stat-strip";
 import { EmptyState } from "@/components/ui/empty-state";
 
 function eur(n: number) {
@@ -31,125 +31,6 @@ const FILTERS = [
   { key: "for_sale" as const, label: "En vente" },
   { key: "sold" as const, label: "Vendus" },
 ];
-
-function PhoneCard({
-  phone,
-  onToggleStatus,
-  onDelete,
-}: {
-  phone: Phone;
-  onToggleStatus: (id: string, status: string) => void;
-  onDelete: (id: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const margin = phone.resalePrice - phone.purchasePrice - phone.repairPrice;
-  const isSold = phone.status === "sold";
-
-  return (
-    <article
-      className={`group border hairline transition-all duration-500 ease-out-expo ${
-        isSold ? "opacity-65 hover:opacity-90" : "hover:border-primary/40"
-      }`}
-    >
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="w-full text-left p-5 flex items-center gap-5"
-      >
-        {/* Photo */}
-        <div className="w-14 h-14 flex-shrink-0 border hairline overflow-hidden">
-          {phone.photoUrl ? (
-            <img src={phone.photoUrl} alt={phone.model} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground/40">
-              <SmartphoneIcon className="w-5 h-5" strokeWidth={1.2} />
-            </div>
-          )}
-        </div>
-
-        {/* Title */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-baseline gap-3">
-            <h3 className="font-heading text-2xl text-foreground leading-none truncate">
-              {phone.model}
-            </h3>
-            <span
-              className={`font-mono-kicker text-[9px] ${
-                isSold ? "text-success" : "text-muted-foreground"
-              }`}
-            >
-              {isSold ? "Vendu" : "En vente"}
-            </span>
-          </div>
-          <div className="mt-1.5 text-[12px] text-muted-foreground">
-            {phone.seller.firstName} {phone.seller.lastName} ·{" "}
-            <span className="text-muted-foreground/70">{phone.seller.village}</span>{" "}
-            · <span className="text-muted-foreground/70">{phone.condition}</span>
-          </div>
-        </div>
-
-        {/* Margin */}
-        <div className="hidden sm:flex flex-col items-end gap-1 min-w-[140px]">
-          <div className="font-mono-kicker text-[9px] text-muted-foreground">Marge</div>
-          <div
-            className={`font-heading text-3xl tabular leading-none ${
-              margin >= 0 ? "text-foreground" : "text-destructive"
-            }`}
-          >
-            {margin >= 0 ? "+" : ""}
-            {eur(margin)}
-          </div>
-        </div>
-
-        <ChevronDown
-          strokeWidth={1.2}
-          className={`w-4 h-4 text-muted-foreground transition-transform duration-500 ease-out-expo ${
-            open ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-
-      {open && (
-        <div className="border-t hairline">
-          <div className="grid grid-cols-3 divide-x divide-hairline">
-            <DetailCell kicker="Achat" value={eur(phone.purchasePrice)} />
-            <DetailCell kicker="Réparation" value={eur(phone.repairPrice)} />
-            <DetailCell kicker="Revente" value={eur(phone.resalePrice)} />
-          </div>
-          <div className="flex items-center gap-3 p-5 border-t hairline">
-            <button
-              onClick={() => onToggleStatus(phone.id, phone.status)}
-              className="flex items-center gap-2 px-4 py-2 text-[11px] font-mono-kicker border hairline hover:border-foreground/60 text-foreground transition-all duration-500 ease-out-expo"
-            >
-              {isSold ? (
-                <ShoppingCart className="w-3 h-3" strokeWidth={1.5} />
-              ) : (
-                <CheckCircle className="w-3 h-3" strokeWidth={1.5} />
-              )}
-              {isSold ? "Remettre en vente" : "Marquer vendu"}
-            </button>
-            <button
-              onClick={() => onDelete(phone.id)}
-              className="ml-auto flex items-center gap-2 px-4 py-2 text-[11px] font-mono-kicker border hairline hover:border-destructive/60 text-muted-foreground hover:text-destructive transition-all duration-500 ease-out-expo"
-            >
-              <Trash2 className="w-3 h-3" strokeWidth={1.5} />
-              Supprimer
-            </button>
-          </div>
-        </div>
-      )}
-    </article>
-  );
-}
-
-function DetailCell({ kicker, value }: { kicker: string; value: string }) {
-  return (
-    <div className="p-5">
-      <div className="font-mono-kicker text-[9px] text-muted-foreground">{kicker}</div>
-      <div className="font-heading text-xl text-foreground mt-1 tabular">{value}</div>
-    </div>
-  );
-}
 
 export default function Phones() {
   const queryClient = useQueryClient();
@@ -199,113 +80,59 @@ export default function Phones() {
     total: phones.length,
     forSale: phones.filter((p) => p.status === "for_sale").length,
     sold: phones.filter((p) => p.status === "sold").length,
-    totalMargin: phones
-      .filter((p) => p.status === "sold")
-      .reduce((s, p) => s + p.resalePrice - p.purchasePrice - p.repairPrice, 0),
     revenue: phones
       .filter((p) => p.status === "sold")
       .reduce((s, p) => s + p.resalePrice, 0),
   };
 
-  const hasData = phones.length > 0;
-
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-8 md:py-10 space-y-14 max-w-[1400px]">
+      <div className="px-6 md:px-10 py-8 md:py-12 space-y-10 max-w-[1400px]">
         <PageHeader
-          num="03"
-          kicker="Inventaire"
+          eyebrow={stats.total > 0 ? `${stats.total} téléphone${stats.total > 1 ? "s" : ""}` : "Inventaire"}
           title="Tous les"
-          emphasis="téléphones"
+          italic="téléphones"
           subline={
-            hasData
-              ? `${phones.length} appareil${phones.length > 1 ? "s" : ""} suivi${
-                  phones.length > 1 ? "s" : ""
-                }, du démarchage à la vente finale.`
-              : "Quand un téléphone passe ici, c'est qu'il a été acheté à un vendeur. La vie de l'appareil démarre ce jour-là."
+            stats.total > 0
+              ? `${stats.forSale} en vente, ${stats.sold} vendus. ${eur(stats.revenue)} de chiffre d'affaires généré.`
+              : "Quand un téléphone passe ici, c'est qu'il a été acheté à un vendeur. Sa vie démarre ce jour-là."
           }
           actions={
             <Link
               to="/add-phone"
-              className="group flex items-center gap-2 px-4 py-2.5 border hairline hover:border-primary text-foreground text-xs font-mono-kicker transition-all duration-500 ease-out-expo"
+              className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary"
             >
-              <Plus className="w-3 h-3" strokeWidth={1.5} />
-              Nouveau
-              <span className="opacity-50 group-hover:translate-x-0.5 transition-transform duration-500 ease-out-expo">
-                →
-              </span>
+              <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+              Nouveau téléphone
             </Link>
           }
         />
 
-        {hasData && (
-          <>
-            <StatStrip
-              hero={{
-                kicker: "Chiffre d'affaires généré",
-                value: eur(stats.revenue),
-                sub: `${stats.sold} téléphone${stats.sold > 1 ? "s" : ""} vendu${
-                  stats.sold > 1 ? "s" : ""
-                }`,
-              }}
-              stats={[
-                {
-                  kicker: "En vente",
-                  value: String(stats.forSale),
-                  sub: "Disponibles maintenant",
-                },
-                {
-                  kicker: "Bénéfice total",
-                  value: eur(stats.totalMargin),
-                  sub: "Hors coûts indirects",
-                  emphasis: stats.totalMargin >= 0 ? "positive" : "negative",
-                },
-                {
-                  kicker: "Total enregistré",
-                  value: String(stats.total),
-                  sub: "Toutes périodes confondues",
-                },
-              ]}
-            />
-
-            <div className="h-px bg-hairline" />
-          </>
-        )}
-
         {/* Toolbar */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 font-mono-kicker text-[10px] text-muted-foreground">
-            <span>04 — Liste & filtres</span>
-            <span className="h-px flex-1 bg-hairline max-w-[120px]" />
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-            <div className="flex-1 max-w-md">
-              <div className="font-mono-kicker text-[9px] text-muted-foreground mb-2">
-                Recherche
-              </div>
-              <div className="relative">
-                <Search
-                  strokeWidth={1.2}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground"
-                />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Modèle, vendeur, village…"
-                  className="w-full pl-6 pr-4 py-2.5 bg-transparent border-0 border-b hairline focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground/40 text-sm transition-colors duration-300 ease-out-expo"
-                />
-              </div>
+        {phones.length > 0 && (
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1 max-w-md">
+              <Search
+                strokeWidth={1.8}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+              />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Modèle, vendeur, village…"
+                className="w-full pl-10 pr-4 py-3 bg-card border hairline-border rounded-md text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all"
+              />
             </div>
-
-            <div className="flex gap-0 border hairline">
+            <div className="inline-flex items-center gap-0.5 p-1 bg-secondary/50 border hairline-border rounded-md">
+              <Filter className="w-3.5 h-3.5 text-muted-foreground mx-2" strokeWidth={1.5} />
               {FILTERS.map((f) => (
                 <button
                   key={f.key}
                   onClick={() => setFilter(f.key)}
-                  className={`px-4 py-2 font-mono-kicker text-[10px] transition-all duration-300 ease-out-expo relative ${
+                  className={`px-3 py-1.5 rounded text-[12px] font-medium transition-all duration-300 ease-out-expo ${
                     filter === f.key
-                      ? "bg-foreground text-background"
+                      ? "ink-surface shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -314,44 +141,37 @@ export default function Phones() {
               ))}
             </div>
           </div>
-        </section>
+        )}
 
         {/* List */}
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
-        ) : !hasData ? (
+        ) : phones.length === 0 ? (
           <EmptyState
-            kicker="Inventaire vide"
-            title={
-              <>
-                Le premier téléphone <span className="italic">n'attend que vous</span>
-              </>
-            }
+            eyebrow="Inventaire vide"
+            title="Le premier téléphone"
+            italic="n'attend que vous"
             body={
               <>
-                Chaque appareil enregistré ici garde sa trace complète : qui l'a vendu, dans
-                quel village, son état, son coût, sa marge. Aucune saisie tableur ; tout
-                tient en deux minutes.
+                Chaque appareil enregistré ici garde sa trace : qui l'a vendu, son état,
+                son coût, sa marge. Aucune saisie tableur ; tout tient en deux minutes.
               </>
             }
             action={
               <Link
                 to="/add-phone"
-                className="group inline-flex items-center gap-2 px-5 py-3 border hairline hover:border-primary text-foreground text-sm font-medium transition-all duration-500 ease-out-expo"
+                className="btn-magnetic inline-flex items-center gap-2 px-5 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-primary"
               >
-                <Plus className="w-3.5 h-3.5" strokeWidth={1.5} />
+                <Plus className="w-3.5 h-3.5" strokeWidth={2} />
                 Enregistrer un téléphone
-                <span className="font-mono-kicker text-[9px] text-muted-foreground group-hover:translate-x-1 transition-transform duration-500 ease-out-expo">
-                  →
-                </span>
               </Link>
             }
           />
         ) : filtered.length === 0 ? (
-          <div className="border hairline py-16 text-center space-y-3">
-            <div className="font-mono-kicker text-[10px] text-muted-foreground">
+          <div className="card-soft rounded-lg py-16 text-center">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
               Aucun résultat
             </div>
             <p className="text-sm text-muted-foreground">
@@ -378,5 +198,119 @@ export default function Phones() {
         )}
       </div>
     </Layout>
+  );
+}
+
+function PhoneCard({
+  phone,
+  onToggleStatus,
+  onDelete,
+}: {
+  phone: Phone;
+  onToggleStatus: (id: string, status: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const margin = phone.resalePrice - phone.purchasePrice - phone.repairPrice;
+  const isSold = phone.status === "sold";
+
+  return (
+    <article className="card-soft rounded-lg overflow-hidden transition-all duration-500 ease-out-expo hover:-translate-y-px">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full text-left p-4 flex items-center gap-4"
+      >
+        <div className="w-14 h-14 rounded-md bg-secondary border hairline-border overflow-hidden flex-shrink-0">
+          {phone.photoUrl ? (
+            <img src={phone.photoUrl} alt={phone.model} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground/40">
+              <SmartphoneIcon className="w-5 h-5" strokeWidth={1.5} />
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h3 className="font-display text-lg text-foreground tracking-tight truncate">
+              {phone.model}
+            </h3>
+            <span
+              className={`text-[9px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded ${
+                isSold
+                  ? "bg-success/10 text-success"
+                  : "bg-primary/10 text-primary"
+              }`}
+            >
+              {isSold ? "Vendu" : "En vente"}
+            </span>
+          </div>
+          <div className="text-[12px] text-muted-foreground mt-1 truncate">
+            {phone.seller.firstName} {phone.seller.lastName} ·{" "}
+            <span className="text-muted-foreground/70">{phone.seller.village}</span>{" "}
+            · <span className="text-muted-foreground/70">{phone.condition}</span>
+          </div>
+        </div>
+
+        <div className="hidden sm:block text-right min-w-[120px]">
+          <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Marge</div>
+          <div
+            className={`font-display tabular text-xl ${
+              margin >= 0 ? "text-foreground" : "text-destructive"
+            }`}
+          >
+            {margin >= 0 ? "+" : ""}
+            {eur(margin)}
+          </div>
+        </div>
+
+        <ChevronDown
+          strokeWidth={1.5}
+          className={`w-4 h-4 text-muted-foreground transition-transform duration-500 ease-out-expo ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {open && (
+        <div className="border-t hairline-border bg-secondary/20">
+          <div className="grid grid-cols-3 divide-x hairline-border">
+            <DetailCell label="Achat" value={eur(phone.purchasePrice)} />
+            <DetailCell label="Réparation" value={eur(phone.repairPrice)} />
+            <DetailCell label="Revente" value={eur(phone.resalePrice)} />
+          </div>
+          <div className="flex items-center gap-3 p-4 border-t hairline-border">
+            <button
+              onClick={() => onToggleStatus(phone.id, phone.status)}
+              className="btn-magnetic flex items-center gap-2 px-4 py-2 ink-surface rounded-md text-[12px] font-medium hover:bg-primary"
+            >
+              {isSold ? (
+                <ShoppingCart className="w-3.5 h-3.5" strokeWidth={2} />
+              ) : (
+                <CheckCircle className="w-3.5 h-3.5" strokeWidth={2} />
+              )}
+              {isSold ? "Remettre en vente" : "Marquer vendu"}
+            </button>
+            <button
+              onClick={() => onDelete(phone.id)}
+              className="ml-auto flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground hover:text-destructive transition-colors"
+            >
+              <Trash2 className="w-3 h-3" strokeWidth={2} />
+              Supprimer
+            </button>
+          </div>
+        </div>
+      )}
+    </article>
+  );
+}
+
+function DetailCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="p-4">
+      <div className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="font-display tabular text-lg text-foreground mt-1">{value}</div>
+    </div>
   );
 }

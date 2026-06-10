@@ -14,12 +14,12 @@ import {
   CheckCircle2,
   Clock,
   StickyNote,
+  Filter,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Client, ClientStatus } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
-import { StatStrip } from "@/components/ui/stat-strip";
 import { EmptyState } from "@/components/ui/empty-state";
 
 type Tab = "all" | "verified" | "pending";
@@ -86,148 +86,94 @@ export default function Clients() {
     onError: (err: Error) => toast.error(err.message || "Erreur"),
   });
 
-  const hasData = clients.length > 0;
-
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-8 md:py-10 space-y-14 max-w-[1400px]">
+      <div className="px-6 md:px-10 py-8 md:py-12 space-y-10 max-w-[1400px]">
         <PageHeader
-          num="04"
-          kicker="CRM"
+          eyebrow={counts.all > 0 ? `${counts.all} contact${counts.all > 1 ? "s" : ""}` : "CRM"}
           title="Vos"
-          emphasis="clients"
+          italic="clients"
           subline={
-            hasData
-              ? `${counts.all} contact${counts.all > 1 ? "s" : ""} — ${counts.verified} démarché${
-                  counts.verified > 1 ? "s" : ""
-                } et validé${counts.verified > 1 ? "s" : ""}, ${counts.pending} en attente.`
-              : "Un client vérifié est quelqu'un que vous avez démarché et qui a validé. Les autres restent en attente jusqu'à confirmation."
+            counts.all > 0
+              ? `${counts.verified} démarchés et validés, ${counts.pending} en attente de retour.`
+              : "Un client vérifié est quelqu'un que vous avez démarché et qui a validé. Les autres restent en attente."
           }
           actions={
             <button
               onClick={() => setOpenCreate(true)}
-              className="group flex items-center gap-2 px-4 py-2.5 border hairline hover:border-primary text-foreground text-xs font-mono-kicker transition-all duration-500 ease-out-expo"
+              className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary"
             >
-              <Plus className="w-3 h-3" strokeWidth={1.5} />
+              <Plus className="w-3.5 h-3.5" strokeWidth={2} />
               Nouveau client
-              <span className="opacity-50 group-hover:translate-x-0.5 transition-transform duration-500 ease-out-expo">
-                →
-              </span>
             </button>
           }
         />
 
-        {hasData && (
-          <>
-            <StatStrip
-              hero={{
-                kicker: "Carnet d'adresses",
-                value: String(counts.all),
-                sub: "contacts enregistrés",
-              }}
-              stats={[
-                {
-                  kicker: "Vérifiés",
-                  value: String(counts.verified),
-                  sub: "Démarchés & validés",
-                  emphasis: "positive",
-                },
-                {
-                  kicker: "En attente",
-                  value: String(counts.pending),
-                  sub: "À recontacter",
-                },
-                {
-                  kicker: "Taux de validation",
-                  value: `${
-                    counts.all > 0 ? Math.round((counts.verified / counts.all) * 100) : 0
-                  }%`,
-                  sub: "Vérifiés / Total",
-                },
-              ]}
-            />
-            <div className="h-px bg-hairline" />
-          </>
-        )}
-
         {/* Toolbar */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 font-mono-kicker text-[10px] text-muted-foreground">
-            <span>05 — Liste & filtres</span>
-            <span className="h-px flex-1 bg-hairline max-w-[120px]" />
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-            <div className="flex-1 max-w-md">
-              <div className="font-mono-kicker text-[9px] text-muted-foreground mb-2">
-                Recherche
-              </div>
-              <div className="relative">
-                <Search
-                  strokeWidth={1.2}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground"
-                />
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Nom, email, téléphone, village…"
-                  className="w-full pl-6 pr-4 py-2.5 bg-transparent border-0 border-b hairline focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground/40 text-sm transition-colors duration-300 ease-out-expo"
-                />
-              </div>
+        {counts.all > 0 && (
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1 max-w-md">
+              <Search
+                strokeWidth={1.8}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+              />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Nom, email, téléphone, village…"
+                className="w-full pl-10 pr-4 py-3 bg-card border hairline-border rounded-md text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all"
+              />
             </div>
-            <div className="flex gap-0 border hairline">
+            <div className="inline-flex items-center gap-0.5 p-1 bg-secondary/50 border hairline-border rounded-md">
+              <Filter className="w-3.5 h-3.5 text-muted-foreground mx-2" strokeWidth={1.5} />
               {TABS.map((t) => (
                 <button
                   key={t.key}
                   onClick={() => setTab(t.key)}
-                  className={`px-4 py-2 font-mono-kicker text-[10px] transition-all duration-300 ease-out-expo ${
+                  className={`px-3 py-1.5 rounded text-[12px] font-medium transition-all duration-300 ease-out-expo ${
                     tab === t.key
-                      ? "bg-foreground text-background"
+                      ? "ink-surface shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {t.label} <span className="opacity-50 ml-1">({counts[t.key]})</span>
+                  {t.label}
+                  <span className="ml-1 opacity-50 tabular">({counts[t.key]})</span>
                 </button>
               ))}
             </div>
           </div>
-        </section>
+        )}
 
         {/* List */}
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
-        ) : !hasData ? (
+        ) : counts.all === 0 ? (
           <EmptyState
-            kicker="CRM vide"
-            title={
-              <>
-                Aucun client <span className="italic">encore</span>
-              </>
-            }
+            eyebrow="CRM vide"
+            title="Aucun client"
+            italic="encore"
             body={
               <>
                 Ajoutez un premier contact — un vendeur démarché, un acheteur revenu deux
                 fois, un prospect repéré au marché. Marquez-le « vérifié » dès qu'il a
-                validé. Le reste suit naturellement.
+                validé.
               </>
             }
             action={
               <button
                 onClick={() => setOpenCreate(true)}
-                className="group inline-flex items-center gap-2 px-5 py-3 border hairline hover:border-primary text-foreground text-sm font-medium transition-all duration-500 ease-out-expo"
+                className="btn-magnetic inline-flex items-center gap-2 px-5 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-primary"
               >
-                <Plus className="w-3.5 h-3.5" strokeWidth={1.5} />
+                <Plus className="w-3.5 h-3.5" strokeWidth={2} />
                 Créer un client
-                <span className="font-mono-kicker text-[9px] text-muted-foreground group-hover:translate-x-1 transition-transform duration-500 ease-out-expo">
-                  →
-                </span>
               </button>
             }
           />
         ) : filtered.length === 0 ? (
-          <div className="border hairline py-16 text-center space-y-3">
-            <div className="font-mono-kicker text-[10px] text-muted-foreground">
+          <div className="card-soft rounded-lg py-16 text-center">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
               Aucun résultat
             </div>
             <p className="text-sm text-muted-foreground">
@@ -262,7 +208,6 @@ export default function Clients() {
   );
 }
 
-// ---------- Card ----------
 function ClientCard({
   client,
   onToggle,
@@ -276,33 +221,42 @@ function ClientCard({
 }) {
   const verified = client.status === "verified";
   return (
-    <article className="group border hairline p-5 space-y-4 transition-all duration-500 ease-out-expo hover:border-foreground/40">
+    <article className="card-soft rounded-lg p-5 space-y-4 hover:-translate-y-0.5 transition-all duration-500 ease-out-expo">
       <header className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="font-mono-kicker text-[9px] text-muted-foreground mb-1.5">
-            {verified ? "Validé" : "À recontacter"}
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary/15 to-secondary flex items-center justify-center font-display text-sm font-semibold text-foreground flex-shrink-0">
+            {client.firstName[0]}
+            {client.lastName[0]}
           </div>
-          <h3 className="font-heading text-2xl text-foreground leading-none truncate">
-            {client.firstName} <span className="italic">{client.lastName}</span>
-          </h3>
-          {client.village && (
-            <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <MapPin className="w-2.5 h-2.5" strokeWidth={1.5} /> {client.village}
-            </div>
-          )}
+          <div className="min-w-0">
+            <h3 className="font-display text-lg text-foreground tracking-tight truncate">
+              {client.firstName} {client.lastName}
+            </h3>
+            {client.village && (
+              <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5">
+                <MapPin className="w-2.5 h-2.5" strokeWidth={1.5} /> {client.village}
+              </div>
+            )}
+          </div>
         </div>
         {verified ? (
-          <ShieldCheck className="w-4 h-4 text-success flex-shrink-0" strokeWidth={1.5} />
+          <div className="flex items-center gap-1 px-2 py-1 bg-success/10 text-success rounded text-[9px] uppercase tracking-wider font-medium">
+            <ShieldCheck className="w-2.5 h-2.5" strokeWidth={2} />
+            Vérifié
+          </div>
         ) : (
-          <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0" strokeWidth={1.5} />
+          <div className="flex items-center gap-1 px-2 py-1 bg-warning/10 text-warning rounded text-[9px] uppercase tracking-wider font-medium">
+            <Clock className="w-2.5 h-2.5" strokeWidth={2} />
+            En attente
+          </div>
         )}
       </header>
 
-      <div className="space-y-1.5 text-[12px]">
+      <div className="space-y-1.5 text-[12px] text-muted-foreground">
         {client.email && (
           <a
             href={`mailto:${client.email}`}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-2 hover:text-foreground transition-colors truncate"
           >
             <Mail className="w-3 h-3" strokeWidth={1.5} />
             <span className="truncate">{client.email}</span>
@@ -311,26 +265,26 @@ function ClientCard({
         {client.phone && (
           <a
             href={`tel:${client.phone}`}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-2 hover:text-foreground transition-colors"
           >
             <PhoneIcon className="w-3 h-3" strokeWidth={1.5} />
             {client.phone}
           </a>
         )}
         {client.notes && (
-          <div className="flex items-start gap-2 pt-1 text-muted-foreground">
+          <div className="flex items-start gap-2 pt-1">
             <StickyNote className="w-3 h-3 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
             <span className="line-clamp-2 italic">{client.notes}</span>
           </div>
         )}
       </div>
 
-      <div className="flex gap-2 pt-3 border-t hairline">
+      <div className="flex gap-2 pt-3 border-t hairline-border">
         {verified ? (
           <button
             onClick={() => onToggle("pending")}
             disabled={pending}
-            className="flex-1 text-[10px] font-mono-kicker py-2 border hairline hover:border-foreground/40 text-muted-foreground hover:text-foreground transition-all duration-500 ease-out-expo"
+            className="flex-1 text-[11px] font-medium py-2 border hairline-border rounded-md text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-all duration-300"
           >
             Repasser en attente
           </button>
@@ -338,15 +292,15 @@ function ClientCard({
           <button
             onClick={() => onToggle("verified")}
             disabled={pending}
-            className="group/btn flex-1 inline-flex items-center justify-center gap-1.5 text-[10px] font-mono-kicker py-2 bg-foreground text-background hover:bg-foreground/90 transition-all duration-500 ease-out-expo"
+            className="btn-magnetic flex-1 inline-flex items-center justify-center gap-1.5 text-[11px] font-medium py-2 ink-surface rounded-md hover:bg-primary"
           >
-            <CheckCircle2 className="w-3 h-3" strokeWidth={1.5} />
+            <CheckCircle2 className="w-3 h-3" strokeWidth={2} />
             Marquer vérifié
           </button>
         )}
         <button
           onClick={onDelete}
-          className="px-3 py-2 border hairline hover:border-destructive/60 text-muted-foreground hover:text-destructive transition-all duration-500 ease-out-expo"
+          className="px-3 py-2 border hairline-border rounded-md text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-all duration-300"
           aria-label="Supprimer"
         >
           <Trash2 className="w-3 h-3" strokeWidth={1.5} />
@@ -356,7 +310,6 @@ function ClientCard({
   );
 }
 
-// ---------- Create dialog ----------
 function CreateClientDialog({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient();
   const [firstName, setFirstName] = useState("");
@@ -397,11 +350,11 @@ function CreateClientDialog({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
-        className="bg-background border hairline max-w-lg w-full p-8 space-y-6 relative"
+        className="card-elevated bg-card rounded-lg max-w-lg w-full p-7 space-y-6 relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -409,13 +362,15 @@ function CreateClientDialog({ onClose }: { onClose: () => void }) {
           className="absolute right-5 top-5 text-muted-foreground hover:text-foreground"
           aria-label="Fermer"
         >
-          <X className="w-4 h-4" strokeWidth={1.5} />
+          <X className="w-4 h-4" strokeWidth={1.8} />
         </button>
 
         <div>
-          <div className="font-mono-kicker text-[10px] text-muted-foreground">CRM</div>
-          <h2 className="font-heading text-3xl text-foreground italic mt-1">
-            Nouveau client<span className="text-primary not-italic">.</span>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+            CRM
+          </div>
+          <h2 className="font-display text-3xl text-foreground tracking-tight mt-1">
+            Nouveau client<span className="text-primary">.</span>
           </h2>
         </div>
 
@@ -430,7 +385,7 @@ function CreateClientDialog({ onClose }: { onClose: () => void }) {
             <Field label="Village / ville" value={village} onChange={setVillage} />
           </div>
           <div>
-            <label className="font-mono-kicker text-[9px] text-muted-foreground block mb-1.5">
+            <label className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium block mb-2">
               Notes
             </label>
             <textarea
@@ -438,57 +393,57 @@ function CreateClientDialog({ onClose }: { onClose: () => void }) {
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Suivi commercial, contexte…"
               rows={3}
-              className="w-full px-0 py-2 bg-transparent border-0 border-b hairline focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground/40 text-sm resize-none transition-colors"
+              className="w-full px-3.5 py-2.5 bg-background border hairline-border rounded-md text-foreground text-sm resize-none placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all"
             />
           </div>
 
           <div>
-            <div className="font-mono-kicker text-[9px] text-muted-foreground block mb-2">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium block mb-2">
               Statut initial
             </div>
-            <div className="grid grid-cols-2 gap-0 border hairline">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setStatus("pending")}
-                className={`py-2.5 px-3 text-[10px] font-mono-kicker transition-all duration-300 ease-out-expo ${
+                className={`py-2.5 px-3 rounded-md text-[12px] font-medium border transition-all duration-300 ${
                   status === "pending"
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-warning/10 border-warning/40 text-warning"
+                    : "border-hairline text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Clock className="w-3 h-3 inline mr-1.5" strokeWidth={1.5} /> En attente
+                <Clock className="w-3 h-3 inline mr-1.5" strokeWidth={2} /> En attente
               </button>
               <button
                 type="button"
                 onClick={() => setStatus("verified")}
-                className={`py-2.5 px-3 text-[10px] font-mono-kicker transition-all duration-300 ease-out-expo border-l hairline ${
+                className={`py-2.5 px-3 rounded-md text-[12px] font-medium border transition-all duration-300 ${
                   status === "verified"
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-success/10 border-success/40 text-success"
+                    : "border-hairline text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <ShieldCheck className="w-3 h-3 inline mr-1.5" strokeWidth={1.5} /> Vérifié
+                <ShieldCheck className="w-3 h-3 inline mr-1.5" strokeWidth={2} /> Vérifié
               </button>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t hairline">
+          <div className="flex justify-end gap-3 pt-4 border-t hairline-border">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-[11px] font-mono-kicker text-muted-foreground hover:text-foreground"
+              className="px-4 py-2 text-[12px] font-medium text-muted-foreground hover:text-foreground"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={createMut.isPending}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-foreground text-background text-[11px] font-mono-kicker hover:bg-foreground/90 disabled:opacity-50 transition-all duration-500 ease-out-expo"
+              className="btn-magnetic inline-flex items-center gap-2 px-5 py-2.5 ink-surface rounded-md text-[12px] font-medium hover:bg-primary disabled:opacity-50"
             >
               {createMut.isPending ? (
                 <Loader2 className="w-3 h-3 animate-spin" />
               ) : (
-                "Enregistrer ↵"
+                "Enregistrer"
               )}
             </button>
           </div>
@@ -511,20 +466,19 @@ function Field({
 }) {
   return (
     <div>
-      <label className="font-mono-kicker text-[9px] text-muted-foreground block mb-1.5">
+      <label className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium block mb-2">
         {label}
       </label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-0 py-2 bg-transparent border-0 border-b hairline focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground/40 text-sm transition-colors"
+        className="w-full px-3.5 py-2.5 bg-background border hairline-border rounded-md text-foreground text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all"
       />
     </div>
   );
 }
 
-// ---------- Delete confirm ----------
 function ConfirmDeleteDialog({
   client,
   onCancel,
@@ -538,38 +492,40 @@ function ConfirmDeleteDialog({
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onCancel}
     >
       <div
-        className="bg-background border hairline max-w-sm w-full p-8 space-y-5"
+        className="card-elevated bg-card rounded-lg max-w-sm w-full p-7 space-y-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div>
-          <div className="font-mono-kicker text-[10px] text-destructive">Suppression</div>
-          <h2 className="font-heading text-2xl text-foreground italic mt-1">
-            Supprimer ce client<span className="text-primary not-italic">.</span> ?
+          <div className="text-[10px] uppercase tracking-[0.18em] text-destructive font-medium">
+            Suppression
+          </div>
+          <h2 className="font-display text-2xl text-foreground tracking-tight mt-1">
+            Supprimer ce client<span className="text-primary">.</span>
           </h2>
         </div>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          <strong className="text-foreground not-italic font-medium">
+          <strong className="text-foreground font-medium">
             {client.firstName} {client.lastName}
           </strong>{" "}
           sera retiré du CRM définitivement. Les téléphones liés ne sont pas concernés.
         </p>
-        <div className="flex justify-end gap-3 pt-3 border-t hairline">
+        <div className="flex justify-end gap-3 pt-3 border-t hairline-border">
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-[11px] font-mono-kicker text-muted-foreground hover:text-foreground"
+            className="px-4 py-2 text-[12px] font-medium text-muted-foreground hover:text-foreground"
           >
             Annuler
           </button>
           <button
             onClick={onConfirm}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-destructive text-destructive-foreground text-[11px] font-mono-kicker hover:bg-destructive/90 disabled:opacity-50 transition-all duration-500 ease-out-expo"
+            className="btn-magnetic inline-flex items-center gap-2 px-5 py-2.5 bg-destructive text-destructive-foreground rounded-md text-[12px] font-medium hover:bg-destructive/90 disabled:opacity-50"
           >
-            {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Confirmer ↵"}
+            {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Confirmer"}
           </button>
         </div>
       </div>
