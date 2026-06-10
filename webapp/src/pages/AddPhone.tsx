@@ -276,13 +276,13 @@ export default function AddPhone() {
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <Input label="Prénom *" value={firstName} onChange={setFirstName} placeholder="Mamadou" />
-                  <Input label="Nom *" value={lastName} onChange={setLastName} placeholder="Diallo" />
+                  <Input label="Prénom *" value={firstName} onChange={setFirstName} placeholder="Said" />
+                  <Input label="Nom *" value={lastName} onChange={setLastName} placeholder="Bacar" />
                   <Input
                     label="Village *"
                     value={village}
                     onChange={setVillage}
-                    placeholder="Conakry"
+                    placeholder="Mamoudzou"
                     icon={<MapPin className="w-3 h-3" />}
                   />
                   <Input
@@ -290,7 +290,7 @@ export default function AddPhone() {
                     value={email}
                     onChange={setEmail}
                     type="email"
-                    placeholder="vendeur@exemple.com"
+                    placeholder="said.bacar@example.com"
                     icon={<Mail className="w-3 h-3" />}
                   />
                   <div className="sm:col-span-2">
@@ -299,7 +299,7 @@ export default function AddPhone() {
                       value={sellerPhone}
                       onChange={setSellerPhone}
                       type="tel"
-                      placeholder="+224 6XX XX XX XX"
+                      placeholder="+262 639 XX XX XX"
                       icon={<PhoneIcon className="w-3 h-3" />}
                     />
                   </div>

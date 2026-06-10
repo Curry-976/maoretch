@@ -52,10 +52,10 @@ export default function Login() {
         <div className="relative z-10 flex items-start justify-between">
           <div>
             <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
-              Plateforme · Maore-Tech
+              Maore-Tech · Outil interne
             </div>
             <div className="mt-1 text-[11px] text-muted-foreground/70">
-              CRM phone-reseller — Mayotte & Afrique de l'Ouest
+              CRM revente de téléphones — Mamoudzou, Mayotte
             </div>
           </div>
           <div className="paper-tile rounded-md p-4">
@@ -95,20 +95,18 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Bottom — testimonial-style */}
-        <div className="relative z-10 max-w-[460px]">
-          <blockquote className="font-italic text-2xl text-foreground/85 leading-snug text-balance">
-            « J'ai arrêté Excel le jour où j'ai ouvert Maore-Tech.
-            En une semaine, j'avais doublé ma marge sur les iPhone reconditionnés. »
-          </blockquote>
-          <div className="mt-4 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-ink text-ink-foreground flex items-center justify-center text-[12px] font-semibold">
-              M
+        {/* Bottom — institutional caption */}
+        <div className="relative z-10 max-w-[460px] space-y-4">
+          <div className="h-px w-12 bg-foreground/30" />
+          <div className="space-y-1">
+            <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-medium">
+              Édition 2026 · Mamoudzou
             </div>
-            <div>
-              <div className="text-xs font-medium text-foreground">Moussa Diop</div>
-              <div className="text-[11px] text-muted-foreground">Revendeur — Dakar, Sénégal</div>
-            </div>
+            <p className="text-sm text-muted-foreground/85 leading-relaxed text-balance">
+              Outil interne <span className="text-foreground font-medium">Maore-Tech</span> —
+              suivi des achats, réparations et ventes de téléphones, contrats de
+              cession signés sur place.
+            </p>
           </div>
         </div>
       </div>
@@ -196,7 +194,7 @@ export default function Login() {
         {/* Footer mini */}
         <div className="hidden lg:flex items-center justify-between px-12 py-5 text-[11px] text-muted-foreground border-t hairline-border">
           <span>© Maore-Tech CRM 2026</span>
-          <span className="tabular">Mayotte · Afrique de l'Ouest</span>
+          <span className="tabular">Mamoudzou · Mayotte 976</span>
         </div>
       </div>
     </div>
