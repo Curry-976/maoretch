@@ -38,9 +38,7 @@ export default function Login() {
       <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-primary/20 via-background to-background flex-col justify-between p-12 border-r border-border relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(213_78%_48%/0.18),transparent_60%)]" />
         <div className="relative">
-          <div className="inline-flex items-center bg-white/95 rounded-2xl px-5 py-4 shadow-2xl">
-            <BrandLogo size="lg" />
-          </div>
+          <BrandLogo size="lg" tone="light" />
         </div>
         <div className="relative space-y-4">
           <h2 className="font-heading text-5xl text-foreground leading-tight">
@@ -68,7 +66,7 @@ export default function Login() {
       {/* Right form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-sm space-y-8">
-          <div className="lg:hidden mb-8 inline-flex items-center bg-white/95 rounded-xl px-4 py-3 shadow-lg">
+          <div className="lg:hidden mb-8">
             <BrandLogo size="md" />
           </div>
 
