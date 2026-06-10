@@ -28,8 +28,8 @@ const typeConfig: Record<
   phone_added: {
     icon: Plus,
     ring: "ring-primary/20",
-    bg: "bg-primary/10",
-    iconColor: "text-primary",
+    bg: "bg-foreground/8",
+    iconColor: "text-foreground",
     label: "Téléphone ajouté",
   },
   phone_sold: {
@@ -178,7 +178,7 @@ export default function Activity() {
                   <div className="w-full h-6 flex items-end justify-center">
                     {d.count > 0 ? (
                       <div
-                        className="w-full bg-primary/70 rounded-sm transition-all"
+                        className="w-full bg-foreground/70 rounded-sm transition-all"
                         style={{ height: `${Math.max(intensity * 100, 18)}%` }}
                         title={`${d.count} événement${d.count > 1 ? "s" : ""}`}
                       />
@@ -211,7 +211,7 @@ export default function Activity() {
               </>
             }
             illustration={
-              <ActivityIcon className="w-32 h-32 text-primary/20" strokeWidth={1} />
+              <ActivityIcon className="w-32 h-32 text-foreground/15" strokeWidth={1} />
             }
           />
         ) : (

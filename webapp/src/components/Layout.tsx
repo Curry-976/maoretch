@@ -137,7 +137,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       }`}
                     >
                       {active && (
-                        <span className="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-r bg-primary" />
+                        <span className="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-r bg-ink-foreground" />
                       )}
                       <Icon
                         className="w-4 h-4 flex-shrink-0"
@@ -145,7 +145,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       />
                       <span className="flex-1">{label}</span>
                       {badge && (
-                        <span className="text-[8px] uppercase tracking-wider px-1.5 py-0.5 bg-primary/20 text-primary font-medium rounded">
+                        <span className="text-[8px] uppercase tracking-wider px-1.5 py-0.5 bg-ink-foreground/10 text-ink-foreground/80 font-medium rounded">
                           {badge}
                         </span>
                       )}
@@ -160,7 +160,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* User card */}
         <div className="p-3 border-t border-sidebar-border">
           <div className="flex items-center gap-2.5 px-2 py-2 rounded-md hover:bg-sidebar-accent/50 transition-colors">
-            <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[12px] font-semibold flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-ink-foreground/10 border border-ink-foreground/15 text-ink-foreground flex items-center justify-center text-[12px] font-semibold flex-shrink-0">
               {session?.user?.email?.[0]?.toUpperCase() ?? "U"}
             </div>
             <div className="flex-1 min-w-0">

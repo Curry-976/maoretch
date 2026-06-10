@@ -189,7 +189,7 @@ export default function VerifyOtp() {
             <button
               onClick={resend}
               disabled={resending || loading}
-              className="font-medium text-foreground hover:text-primary transition-colors disabled:opacity-50"
+              className="font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
             >
               {resending ? "Envoi…" : "Renvoyer le code"}
             </button>

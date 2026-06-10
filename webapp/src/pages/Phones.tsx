@@ -125,7 +125,7 @@ export default function Phones() {
           </div>
           <Link
             to="/add-phone"
-            className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary self-start"
+            className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-ink/90 self-start"
           >
             <Plus className="w-3.5 h-3.5" strokeWidth={2} />
             Nouveau téléphone
@@ -186,7 +186,7 @@ export default function Phones() {
             action={
               <Link
                 to="/add-phone"
-                className="btn-magnetic inline-flex items-center gap-2 px-5 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-primary"
+                className="btn-magnetic inline-flex items-center gap-2 px-5 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-ink/90"
               >
                 <Plus className="w-3.5 h-3.5" strokeWidth={2} />
                 Enregistrer un téléphone
@@ -264,7 +264,7 @@ function PhoneCard({
               className={`text-[9px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded ${
                 isSold
                   ? "bg-success/10 text-success"
-                  : "bg-primary/10 text-primary"
+                  : "bg-foreground/8 text-primary"
               }`}
             >
               {isSold ? "Vendu" : "En vente"}
@@ -307,7 +307,7 @@ function PhoneCard({
           <div className="flex items-center gap-3 p-4 border-t hairline-border">
             <button
               onClick={() => onToggleStatus(phone.id, phone.status)}
-              className="btn-magnetic flex items-center gap-2 px-4 py-2 ink-surface rounded-md text-[12px] font-medium hover:bg-primary"
+              className="btn-magnetic flex items-center gap-2 px-4 py-2 ink-surface rounded-md text-[12px] font-medium hover:bg-ink/90"
             >
               {isSold ? (
                 <ShoppingCart className="w-3.5 h-3.5" strokeWidth={2} />

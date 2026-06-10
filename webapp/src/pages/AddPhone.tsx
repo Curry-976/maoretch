@@ -308,7 +308,7 @@ export default function AddPhone() {
                 {/* Contract */}
                 <div className="pt-8 mt-8 border-t hairline-border space-y-5">
                   <div className="flex items-center gap-2">
-                    <FileSignature className="w-4 h-4 text-primary" strokeWidth={1.8} />
+                    <FileSignature className="w-4 h-4 text-foreground" strokeWidth={1.8} />
                     <h3 className="font-display text-lg text-foreground tracking-tight">
                       Contrat de cession
                     </h3>
@@ -388,7 +388,7 @@ export default function AddPhone() {
                         onClick={() => setCondition(c.value)}
                         className={`py-2.5 px-2 rounded-md text-[12px] font-medium border transition-all duration-300 ease-out-expo ${
                           condition === c.value
-                            ? "bg-primary text-primary-foreground border-primary"
+                            ? "bg-foreground text-background border-foreground"
                             : "bg-card border-hairline text-muted-foreground hover:text-foreground hover:border-foreground/30"
                         }`}
                       >
@@ -421,9 +421,9 @@ export default function AddPhone() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="group aspect-square max-w-[260px] w-full border border-dashed border-hairline rounded-md flex flex-col items-center justify-center gap-3 text-muted-foreground hover:border-primary hover:bg-primary/5 transition-all duration-500 ease-out-expo bg-card"
+                    className="group aspect-square max-w-[260px] w-full border border-dashed border-hairline rounded-md flex flex-col items-center justify-center gap-3 text-muted-foreground hover:border-foreground/40 hover:bg-foreground/5 transition-all duration-500 ease-out-expo bg-card"
                   >
-                    <Camera className="w-6 h-6 group-hover:text-primary transition-colors" strokeWidth={1.5} />
+                    <Camera className="w-6 h-6 group-hover:text-foreground transition-colors" strokeWidth={1.5} />
                     <span className="text-[11px] uppercase tracking-wider">
                       Ajouter une photo
                     </span>
@@ -507,7 +507,7 @@ export default function AddPhone() {
             <button
               type="submit"
               disabled={createMutation.isPending}
-              className="btn-magnetic inline-flex items-center gap-2 px-6 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-primary disabled:opacity-40 shadow-lg shadow-ink/20"
+              className="btn-magnetic inline-flex items-center gap-2 px-6 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-ink/90 disabled:opacity-40 shadow-lg shadow-ink/20"
             >
               {createMutation.isPending ? (
                 <>
@@ -544,7 +544,7 @@ function Section({
   return (
     <section className="card-soft rounded-lg p-6 lg:p-8 space-y-6">
       <header className="flex items-center gap-4 pb-6 border-b hairline-border">
-        <div className="w-9 h-9 rounded-md bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+        <div className="w-9 h-9 rounded-md bg-foreground/8 text-foreground flex items-center justify-center flex-shrink-0">
           {icon}
         </div>
         <div className="flex-1">

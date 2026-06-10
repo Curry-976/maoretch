@@ -54,7 +54,7 @@ export default function NotFound() {
           </button>
           <Link
             to="/dashboard"
-            className="btn-magnetic inline-flex items-center gap-2 px-5 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary"
+            className="btn-magnetic inline-flex items-center gap-2 px-5 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-ink/90"
           >
             <Home className="w-3.5 h-3.5" strokeWidth={2} />
             Tableau de bord

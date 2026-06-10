@@ -43,7 +43,7 @@ export function EmptyState({ eyebrow, title, italic, body, illustration, action 
 
 function DefaultIllustration() {
   return (
-    <svg viewBox="0 0 240 240" fill="none" className="w-52 h-52 text-primary/30" aria-hidden>
+    <svg viewBox="0 0 240 240" fill="none" className="w-52 h-52 text-foreground/20" aria-hidden>
       <rect x="80" y="40" width="80" height="160" rx="14" stroke="currentColor" strokeWidth="1.5" />
       <g stroke="currentColor" strokeWidth="1" strokeLinecap="round">
         <line x1="120" y1="80" x2="120" y2="160" />

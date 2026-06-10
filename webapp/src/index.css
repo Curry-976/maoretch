@@ -181,14 +181,14 @@
 
   .text-balance { text-wrap: balance; }
 
-  /* Magnetic CTA helper */
+  /* Magnetic CTA helper — elevates on hover but stays its base colour */
   .btn-magnetic {
     transition-property: transform, box-shadow, background-color, color;
     transition-duration: 400ms;
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .btn-magnetic:hover { transform: translateY(-1px); }
-  .btn-magnetic:active { transform: translateY(0); }
+  .btn-magnetic:hover { transform: translateY(-1px); box-shadow: 0 8px 20px -8px hsl(var(--ink) / 0.4); }
+  .btn-magnetic:active { transform: translateY(0); box-shadow: none; }
 
   /* Selection */
 }

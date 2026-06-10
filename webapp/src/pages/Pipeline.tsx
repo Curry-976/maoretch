@@ -132,7 +132,7 @@ export default function Pipeline() {
           </div>
           <Link
             to="/add-phone"
-            className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary self-start"
+            className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-ink/90 self-start"
           >
             <Plus className="w-3.5 h-3.5" strokeWidth={2} />
             Nouveau téléphone
@@ -271,7 +271,7 @@ function PhoneKanbanCard({
         {lane !== "sold" ? (
           <button
             onClick={onMarkSold}
-            className="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 px-2.5 py-1.5 ink-surface rounded text-[10px] font-medium hover:bg-primary transition-all duration-300 ease-out-expo"
+            className="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 px-2.5 py-1.5 ink-surface rounded text-[10px] font-medium hover:bg-ink/90 transition-all duration-300 ease-out-expo"
           >
             Marquer vendu
             <ArrowRight className="w-2.5 h-2.5" strokeWidth={2} />

@@ -128,7 +128,7 @@ export default function Dashboard() {
           </div>
           <Link
             to="/add-phone"
-            className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-primary self-start md:self-end"
+            className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-ink/90 self-start md:self-end"
           >
             <Plus className="w-3.5 h-3.5" strokeWidth={2} />
             Ajouter un téléphone
@@ -156,8 +156,8 @@ export default function Dashboard() {
                     Cumul depuis le début · {monthly.length} mois suivis
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <TrendingUp className="w-4 h-4 text-primary" strokeWidth={2} />
+                <div className="w-10 h-10 rounded-full bg-foreground/8 flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-foreground" strokeWidth={2} />
                 </div>
               </div>
 
@@ -192,8 +192,8 @@ export default function Dashboard() {
                   <AreaChart data={monthly} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="hsl(213 78% 42%)" stopOpacity={0.35} />
-                        <stop offset="100%" stopColor="hsl(213 78% 42%)" stopOpacity={0} />
+                        <stop offset="0%" stopColor="hsl(220 30% 10%)" stopOpacity={0.35} />
+                        <stop offset="100%" stopColor="hsl(220 30% 10%)" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <Tooltip
@@ -205,7 +205,7 @@ export default function Dashboard() {
                     <Area
                       type="monotone"
                       dataKey="revenue"
-                      stroke="hsl(213 78% 42%)"
+                      stroke="hsl(220 30% 10%)"
                       strokeWidth={2}
                       fill="url(#heroGrad)"
                     />
@@ -231,8 +231,8 @@ export default function Dashboard() {
                     Capital immobilisé
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Tag className="w-4 h-4 text-primary" strokeWidth={2} />
+                <div className="w-10 h-10 rounded-full bg-foreground/10 flex items-center justify-center">
+                  <Tag className="w-4 h-4 text-foreground" strokeWidth={2} />
                 </div>
               </div>
 
@@ -284,12 +284,12 @@ export default function Dashboard() {
 
         {isEmpty ? (
           <section className="card-soft rounded-lg p-12 text-center space-y-6 dot-grid">
-            <div className="inline-flex w-14 h-14 rounded-full bg-primary/10 items-center justify-center mx-auto">
-              <Plus className="w-6 h-6 text-primary" strokeWidth={2} />
+            <div className="inline-flex w-14 h-14 rounded-full bg-foreground/8 items-center justify-center mx-auto">
+              <Plus className="w-6 h-6 text-foreground" strokeWidth={2} />
             </div>
             <div className="space-y-2 max-w-md mx-auto">
               <h3 className="font-display text-3xl text-foreground tracking-tightest">
-                Démarrons<span className="text-primary">.</span>
+                Démarrons.
               </h3>
               <p className="text-[15px] text-muted-foreground">
                 Aucun téléphone enregistré pour l'instant. Ajoutez votre premier appareil
@@ -298,7 +298,7 @@ export default function Dashboard() {
             </div>
             <Link
               to="/add-phone"
-              className="btn-magnetic inline-flex items-center gap-2 px-5 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-primary"
+              className="btn-magnetic inline-flex items-center gap-2 px-5 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-ink/90"
             >
               <Plus className="w-3.5 h-3.5" strokeWidth={2} />
               Enregistrer un téléphone
@@ -317,7 +317,7 @@ export default function Dashboard() {
                     <div className="font-display text-xl text-foreground mt-0.5">6 derniers mois</div>
                   </div>
                   <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                    <span className="w-2 h-2 rounded-full bg-primary" />
+                    <span className="w-2 h-2 rounded-full bg-foreground" />
                     Revenus
                   </div>
                 </div>
@@ -325,8 +325,8 @@ export default function Dashboard() {
                   <AreaChart data={monthly} margin={{ top: 10, right: 0, left: -10, bottom: 0 }}>
                     <defs>
                       <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="hsl(213 78% 42%)" stopOpacity={0.30} />
-                        <stop offset="100%" stopColor="hsl(213 78% 42%)" stopOpacity={0} />
+                        <stop offset="0%" stopColor="hsl(220 30% 10%)" stopOpacity={0.30} />
+                        <stop offset="100%" stopColor="hsl(220 30% 10%)" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="2 2" stroke="hsl(220 14% 92%)" vertical={false} />
@@ -344,13 +344,13 @@ export default function Dashboard() {
                     />
                     <Tooltip
                       contentStyle={tooltipStyle}
-                      cursor={{ stroke: "hsl(213 78% 42%)", strokeOpacity: 0.3 }}
+                      cursor={{ stroke: "hsl(220 30% 10%)", strokeOpacity: 0.3 }}
                       formatter={(v: number) => [eur(v), "Revenu"]}
                     />
                     <Area
                       type="monotone"
                       dataKey="revenue"
-                      stroke="hsl(213 78% 42%)"
+                      stroke="hsl(220 30% 10%)"
                       strokeWidth={2}
                       fill="url(#revGrad)"
                     />
@@ -438,7 +438,7 @@ export default function Dashboard() {
                               className={`text-[10px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded ${
                                 p.status === "sold"
                                   ? "bg-success/10 text-success"
-                                  : "bg-primary/10 text-primary"
+                                  : "bg-foreground/8 text-primary"
                               }`}
                             >
                               {p.status === "sold" ? "Vendu" : "En vente"}
@@ -499,14 +499,14 @@ function Tile({
   return (
     <Link
       to={href}
-      className="card-soft rounded-lg p-5 group hover:-translate-y-0.5 hover:border-primary/40 transition-all duration-500 ease-out-expo relative"
+      className="card-soft rounded-lg p-5 group hover:-translate-y-0.5 hover:border-foreground/40 transition-all duration-500 ease-out-expo relative"
     >
       <div className="flex items-start justify-between">
-        <div className="w-7 h-7 rounded-md bg-primary/10 text-primary flex items-center justify-center">
+        <div className="w-7 h-7 rounded-md bg-foreground/8 text-foreground flex items-center justify-center">
           {icon}
         </div>
         {badge && (
-          <span className="text-[8px] uppercase tracking-wider px-1.5 py-0.5 bg-primary text-primary-foreground font-medium rounded">
+          <span className="text-[8px] uppercase tracking-wider px-1.5 py-0.5 bg-foreground text-background font-medium rounded">
             {badge}
           </span>
         )}
