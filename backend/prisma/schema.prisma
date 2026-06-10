@@ -157,7 +157,10 @@ model DocumentLine {
 
 model Phone {
   id            String   @id @default(cuid())
+  brand         String?
   model         String
+  storage       String?
+  battery       String?
   imei          String?
   condition     String
   photoUrl      String?

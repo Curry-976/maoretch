@@ -36,6 +36,22 @@ function emptyLine(): Line {
   return { phoneId: "", label: "", description: "", quantity: 1, unitPrice: 0 };
 }
 
+function lineFromPhone(p: Phone): Line {
+  const bits = [p.brand, p.model].filter(Boolean).join(" ");
+  const specs = [p.storage, p.condition, p.imei ? `IMEI ${p.imei}` : null]
+    .filter(Boolean)
+    .join(" · ");
+  return {
+    phoneId: p.id,
+    label: specs ? `${bits} · ${specs}` : bits,
+    description: `Vendeur : ${p.seller.firstName} ${p.seller.lastName} · ${p.seller.village}${
+      p.battery ? ` · Batterie ${p.battery}` : ""
+    }`,
+    quantity: 1,
+    unitPrice: p.resalePrice,
+  };
+}
+
 export default function DocumentEditor() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -112,15 +128,35 @@ export default function DocumentEditor() {
     queryFn: () => api.get<Client[]>("/api/clients"),
   });
 
-  // Available phones in inventory — picker fills line label + price
+  // All phones in inventory — picker fills line label + price. The dropdown
+  // only offers for-sale ones, but we keep the full list so a prefill link
+  // from any phone (even sold) still resolves.
   const { data: phones = [] } = useQuery({
-    queryKey: ["phones-for-sale"],
-    queryFn: () => api.get<Phone[]>("/api/phones?status=for_sale"),
+    queryKey: ["phones"],
+    queryFn: () => api.get<Phone[]>("/api/phones"),
   });
+  const availablePhones = useMemo(
+    () => phones.filter((p) => p.status === "for_sale"),
+    [phones],
+  );
   const phoneById = useMemo(
     () => Object.fromEntries(phones.map((p) => [p.id, p])),
     [phones],
   );
+
+  // Pre-fill the first line from a ?phoneId= query param (link from stock).
+  const prefillPhoneId = search.get("phoneId");
+  const [prefilled, setPrefilled] = useState(false);
+  useEffect(() => {
+    if (isEditing || prefilled || !prefillPhoneId) return;
+    const p = phones.find((x) => x.id === prefillPhoneId);
+    if (!p) return;
+    setLines([lineFromPhone(p)]);
+    if (!clientId && !clientName) {
+      // leave client empty; user picks. But surface the seller? no — client is the buyer.
+    }
+    setPrefilled(true);
+  }, [phones, prefillPhoneId, isEditing, prefilled, clientId, clientName]);
 
   const subtotal = useMemo(
     () => lines.reduce((s, l) => s + l.quantity * l.unitPrice, 0),
@@ -322,7 +358,7 @@ export default function DocumentEditor() {
                   className="card-soft rounded-md p-3 grid grid-cols-12 gap-2 items-start"
                 >
                   <div className="col-span-12 sm:col-span-5 space-y-1.5">
-                    {phones.length > 0 && (
+                    {availablePhones.length > 0 && (
                       <select
                         value={line.phoneId}
                         onChange={(e) => {
@@ -333,22 +369,16 @@ export default function DocumentEditor() {
                           }
                           const p = phoneById[pid];
                           if (!p) return;
+                          const filled = lineFromPhone(p);
                           setLine(i, {
-                            phoneId: pid,
-                            label: p.imei
-                              ? `${p.model} · ${p.condition} · IMEI ${p.imei}`
-                              : `${p.model} · ${p.condition}`,
-                            description:
-                              line.description ||
-                              `Vendeur : ${p.seller.firstName} ${p.seller.lastName} · ${p.seller.village}`,
-                            unitPrice: p.resalePrice,
-                            quantity: 1,
+                            ...filled,
+                            description: line.description || filled.description,
                           });
                         }}
                         className="w-full px-2.5 py-1.5 bg-card border hairline-border rounded-md text-[12px] text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
                       >
                         <option value="">— Choisir dans l'inventaire (optionnel) —</option>
-                        {phones
+                        {availablePhones
                           .filter(
                             (p) =>
                               !lines.some(
@@ -358,7 +388,8 @@ export default function DocumentEditor() {
                           )
                           .map((p) => (
                             <option key={p.id} value={p.id}>
-                              {p.model} · {p.condition}
+                              {[p.brand, p.model].filter(Boolean).join(" ")} · {p.condition}
+                              {p.storage ? ` · ${p.storage}` : ""}
                               {p.imei ? ` · IMEI ${p.imei}` : ""} ·{" "}
                               {new Intl.NumberFormat("fr-FR", {
                                 style: "currency",

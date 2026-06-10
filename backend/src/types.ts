@@ -14,7 +14,10 @@ export const UpdateSellerSchema = CreateSellerSchema.partial();
 
 // ---------- Phones ----------
 export const CreatePhoneSchema = z.object({
+  brand: z.string().optional().or(z.literal("")),
   model: z.string().min(1),
+  storage: z.string().optional().or(z.literal("")),
+  battery: z.string().optional().or(z.literal("")),
   imei: z.string().optional().or(z.literal("")),
   condition: z.string().min(1),
   photoUrl: z.string().optional(),
@@ -25,7 +28,10 @@ export const CreatePhoneSchema = z.object({
 });
 
 export const UpdatePhoneSchema = z.object({
+  brand: z.string().optional().or(z.literal("")),
   model: z.string().min(1).optional(),
+  storage: z.string().optional().or(z.literal("")),
+  battery: z.string().optional().or(z.literal("")),
   imei: z.string().optional().or(z.literal("")),
   condition: z.string().min(1).optional(),
   photoUrl: z.string().optional(),

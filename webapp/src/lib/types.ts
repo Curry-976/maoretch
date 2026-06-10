@@ -12,7 +12,10 @@ export interface Seller {
 
 export interface Phone {
   id: string;
+  brand: string | null;
   model: string;
+  storage: string | null;
+  battery: string | null;
   imei: string | null;
   condition: string;
   photoUrl: string | null;

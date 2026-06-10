@@ -35,11 +35,21 @@ phonesRouter.get("/:id", async (c) => {
   return c.json({ data: phone });
 });
 
+const OPTIONAL_STRINGS = ["brand", "storage", "battery", "imei"] as const;
+
+function nullifyOptionals(body: Record<string, any>) {
+  const out: Record<string, any> = { ...body };
+  for (const key of OPTIONAL_STRINGS) {
+    if (key in out) out[key] = (out[key] as string | undefined)?.trim() || null;
+  }
+  return out;
+}
+
 // Create a phone
 phonesRouter.post("/", zValidator("json", CreatePhoneSchema), async (c) => {
   const body = c.req.valid("json");
   const phone = await prisma.phone.create({
-    data: { ...body, imei: body.imei?.trim() || null },
+    data: nullifyOptionals(body),
     include: { seller: true },
   });
   return c.json({ data: phone }, 201);
@@ -49,11 +59,9 @@ phonesRouter.post("/", zValidator("json", CreatePhoneSchema), async (c) => {
 phonesRouter.patch("/:id", zValidator("json", UpdatePhoneSchema), async (c) => {
   const id = c.req.param("id");
   const body = c.req.valid("json");
-  const data: Record<string, unknown> = { ...body };
-  if (body.imei !== undefined) data.imei = body.imei?.trim() || null;
   const phone = await prisma.phone.update({
     where: { id },
-    data,
+    data: nullifyOptionals(body),
     include: { seller: true },
   });
   return c.json({ data: phone });

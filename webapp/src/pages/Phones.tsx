@@ -8,9 +8,13 @@ import {
   CheckCircle,
   ShoppingCart,
   ChevronDown,
+  ChevronRight,
   Plus,
   Smartphone as SmartphoneIcon,
   Filter,
+  List as ListIcon,
+  Layers,
+  FileText,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Phone } from "@/lib/types";
@@ -56,6 +60,7 @@ export default function Phones() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "for_sale" | "sold">("all");
+  const [view, setView] = useState<"list" | "grouped">("grouped");
 
   const { data: phones = [], isLoading } = useQuery({
     queryKey: ["phones"],
@@ -169,6 +174,30 @@ export default function Phones() {
                 </button>
               ))}
             </div>
+            <div className="inline-flex items-center gap-0.5 p-1 bg-secondary/50 border hairline-border rounded-md">
+              <button
+                onClick={() => setView("grouped")}
+                title="Grouper par marque & modèle"
+                className={`p-1.5 rounded transition-all ${
+                  view === "grouped"
+                    ? "ink-surface shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" strokeWidth={1.8} />
+              </button>
+              <button
+                onClick={() => setView("list")}
+                title="Liste complète"
+                className={`p-1.5 rounded transition-all ${
+                  view === "list"
+                    ? "ink-surface shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <ListIcon className="w-3.5 h-3.5" strokeWidth={1.8} />
+              </button>
+            </div>
           </div>
         )}
 
@@ -215,6 +244,18 @@ export default function Phones() {
               {search ? `Aucun téléphone ne correspond à « ${search} ».` : "Aucun téléphone avec ce filtre."}
             </p>
           </div>
+        ) : view === "grouped" ? (
+          <GroupedView
+            phones={filtered}
+            onToggleStatus={(id, status) =>
+              toggleStatusMutation.mutate({ id, currentStatus: status })
+            }
+            onDelete={(id) => {
+              if (window.confirm("Êtes-vous sûr de vouloir supprimer ce téléphone ?")) {
+                deleteMutation.mutate(id);
+              }
+            }}
+          />
         ) : (
           <div className="space-y-2">
             {filtered.map((phone) => (
@@ -235,6 +276,132 @@ export default function Phones() {
         )}
       </PageMotion>
     </Layout>
+  );
+}
+
+// ---------- Grouped by brand → model ----------
+function brandOf(p: Phone): string {
+  return (p.brand && p.brand.trim()) || "Sans marque";
+}
+
+function GroupedView({
+  phones,
+  onToggleStatus,
+  onDelete,
+}: {
+  phones: Phone[];
+  onToggleStatus: (id: string, status: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  // brand -> model -> phones[]
+  const grouped = new Map<string, Map<string, Phone[]>>();
+  for (const p of phones) {
+    const b = brandOf(p);
+    if (!grouped.has(b)) grouped.set(b, new Map());
+    const models = grouped.get(b)!;
+    const key = p.storage ? `${p.model} · ${p.storage}` : p.model;
+    if (!models.has(key)) models.set(key, []);
+    models.get(key)!.push(p);
+  }
+  const brands = Array.from(grouped.entries()).sort((a, b) =>
+    a[0].localeCompare(b[0]),
+  );
+
+  return (
+    <div className="space-y-5">
+      {brands.map(([brand, models]) => {
+        const brandCount = Array.from(models.values()).reduce(
+          (s, arr) => s + arr.length,
+          0,
+        );
+        const forSale = Array.from(models.values())
+          .flat()
+          .filter((p) => p.status === "for_sale").length;
+        return (
+          <section key={brand} className="card-soft rounded-lg overflow-hidden">
+            <header className="px-5 py-4 border-b hairline-border flex items-center justify-between">
+              <div className="flex items-baseline gap-3">
+                <h3 className="font-display text-xl text-foreground tracking-tight">
+                  {brand}
+                </h3>
+                <span className="text-[11px] text-muted-foreground">
+                  {forSale} en vente / {brandCount} au total
+                </span>
+              </div>
+              <span className="font-display tabular text-2xl text-foreground">
+                {brandCount}
+              </span>
+            </header>
+            <div className="divide-y hairline-border">
+              {Array.from(models.entries())
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .map(([modelKey, list]) => (
+                  <ModelGroup
+                    key={modelKey}
+                    modelKey={modelKey}
+                    list={list}
+                    onToggleStatus={onToggleStatus}
+                    onDelete={onDelete}
+                  />
+                ))}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
+function ModelGroup({
+  modelKey,
+  list,
+  onToggleStatus,
+  onDelete,
+}: {
+  modelKey: string;
+  list: Phone[];
+  onToggleStatus: (id: string, status: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const forSale = list.filter((p) => p.status === "for_sale").length;
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full px-5 py-3.5 flex items-center gap-3 text-left hover:bg-secondary/30 transition-colors"
+      >
+        <ChevronRight
+          className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${
+            open ? "rotate-90" : ""
+          }`}
+          strokeWidth={1.8}
+        />
+        <div className="flex-1 min-w-0">
+          <div className="font-medium text-foreground truncate">{modelKey}</div>
+          <div className="text-[11px] text-muted-foreground">
+            {forSale} en vente
+            {list.length - forSale > 0 && ` · ${list.length - forSale} vendu(s)`}
+          </div>
+        </div>
+        <span className="font-display tabular text-lg text-foreground">
+          {list.length}
+        </span>
+      </button>
+      {open && (
+        <div className="px-3 pb-3 space-y-2 bg-secondary/20">
+          {list.map((phone) => (
+            <PhoneCard
+              key={phone.id}
+              phone={phone}
+              onToggleStatus={onToggleStatus}
+              onDelete={onDelete}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -288,9 +455,15 @@ function PhoneCard({
             <span className="text-muted-foreground/70">{phone.seller.village}</span>{" "}
             · <span className="text-muted-foreground/70">{phone.condition}</span>
           </div>
-          {phone.imei && (
-            <div className="text-[10px] text-muted-foreground/60 font-mono tabular mt-0.5 truncate">
-              IMEI {phone.imei}
+          {(phone.storage || phone.battery || phone.imei) && (
+            <div className="text-[10px] text-muted-foreground/60 mt-0.5 truncate flex items-center gap-2 flex-wrap">
+              {phone.storage && <span>{phone.storage}</span>}
+              {phone.battery && (
+                <span>· Batterie {phone.battery}</span>
+              )}
+              {phone.imei && (
+                <span className="font-mono tabular">· IMEI {phone.imei}</span>
+              )}
             </div>
           )}
         </div>
@@ -334,6 +507,20 @@ function PhoneCard({
               )}
               {isSold ? "Remettre en vente" : "Marquer vendu"}
             </button>
+            <Link
+              to={`/documents/new?type=quote&phoneId=${phone.id}`}
+              className="flex items-center gap-1.5 px-3 py-2 border hairline-border rounded-md text-[12px] font-medium text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-all"
+            >
+              <FileText className="w-3 h-3" strokeWidth={2} />
+              Devis
+            </Link>
+            <Link
+              to={`/documents/new?type=invoice&phoneId=${phone.id}`}
+              className="flex items-center gap-1.5 px-3 py-2 border hairline-border rounded-md text-[12px] font-medium text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-all"
+            >
+              <FileText className="w-3 h-3" strokeWidth={2} />
+              Facture
+            </Link>
             <button
               onClick={() => onDelete(phone.id)}
               className="ml-auto flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground hover:text-destructive transition-colors"

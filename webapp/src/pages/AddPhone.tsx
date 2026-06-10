@@ -88,7 +88,10 @@ export default function AddPhone() {
   const [signature, setSignature] = useState<string | null>(null);
   const [contractAccepted, setContractAccepted] = useState(false);
 
+  const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
+  const [storage, setStorage] = useState("");
+  const [battery, setBattery] = useState("");
   const [imei, setImei] = useState("");
   const [condition, setCondition] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string>("");
@@ -116,7 +119,10 @@ export default function AddPhone() {
         sellerId = seller.id;
       }
       return api.post<Phone>("/api/phones", {
+        brand: brand.trim() || undefined,
         model,
+        storage: storage.trim() || undefined,
+        battery: battery.trim() || undefined,
         imei: imei.trim() || undefined,
         condition,
         photoUrl: photoUrl || undefined,
@@ -221,6 +227,18 @@ export default function AddPhone() {
         <datalist id="mayotte-villages">
           {MAYOTTE_VILLAGES.map((v) => (
             <option key={v} value={v} />
+          ))}
+        </datalist>
+        <datalist id="phone-brands">
+          {["Apple", "Samsung", "Xiaomi", "Oppo", "Huawei", "Google", "OnePlus", "Realme", "Nokia", "Motorola", "Honor", "Tecno"].map(
+            (b) => (
+              <option key={b} value={b} />
+            ),
+          )}
+        </datalist>
+        <datalist id="phone-storage">
+          {["32 Go", "64 Go", "128 Go", "256 Go", "512 Go", "1 To"].map((s) => (
+            <option key={s} value={s} />
           ))}
         </datalist>
         {/* Stepper header — no editorial big title */}
@@ -388,12 +406,34 @@ export default function AddPhone() {
           <Section icon={<SmartphoneIcon className="w-4 h-4" />} number="02" title="Appareil" subtitle="Le téléphone, en détail.">
             <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-8">
               <div className="space-y-5">
-                <Input
-                  label="Modèle *"
-                  value={model}
-                  onChange={setModel}
-                  placeholder="iPhone 13 Pro, Samsung Galaxy S22…"
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <Input
+                    label="Marque"
+                    value={brand}
+                    onChange={setBrand}
+                    placeholder="Apple, Samsung…"
+                    list="phone-brands"
+                  />
+                  <Input
+                    label="Modèle *"
+                    value={model}
+                    onChange={setModel}
+                    placeholder="iPhone 13 Pro, Galaxy S22…"
+                  />
+                  <Input
+                    label="Stockage"
+                    value={storage}
+                    onChange={setStorage}
+                    placeholder="128 Go"
+                    list="phone-storage"
+                  />
+                  <Input
+                    label="Batterie"
+                    value={battery}
+                    onChange={setBattery}
+                    placeholder="89% ou 4000 mAh"
+                  />
+                </div>
 
                 <Input
                   label="IMEI"
