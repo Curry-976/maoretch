@@ -9,5 +9,7 @@ backend/public
 *.sqlite
 *.sqlite3
 .DS_Store
+desktop.ini
+Thumbs.db
 .vscode
 .idea

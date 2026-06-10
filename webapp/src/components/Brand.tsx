@@ -9,7 +9,7 @@ const sizes: Record<Size, string> = {
 export function BrandLogo({ size = "md", className = "" }: { size?: Size; className?: string }) {
   return (
     <img
-      src="/logo.png"
+      src="/logo.jpg"
       alt="Maore-Tech"
       className={`${sizes[size]} w-auto object-contain ${className}`}
       draggable={false}
