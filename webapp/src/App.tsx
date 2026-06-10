@@ -17,7 +17,19 @@ import Activity from "@/pages/Activity";
 import Users from "@/pages/Users";
 import NotFound from "@/pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Don't refetch every time the user comes back to the tab — the app
+      // felt like it was reloading on every focus event.
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      // Consider data fresh for 1 minute, then refetch in background only.
+      staleTime: 60_000,
+      retry: 1,
+    },
+  },
+});
 
 function AnimatedRoutes() {
   const location = useLocation();
