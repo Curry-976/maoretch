@@ -1,7 +1,10 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
+import { z } from "zod";
 import { prisma } from "../prisma";
 import { CreateDocumentSchema, UpdateDocumentSchema } from "../types";
+import { sendMail } from "../lib/mail";
+import { renderDocumentEmail } from "../lib/document-mail";
 import type { auth } from "../auth";
 
 type Variables = {
@@ -245,6 +248,58 @@ documentsRouter.post("/:id/convert-to-invoice", async (c) => {
   });
   return c.json({ data: invoice }, 201);
 });
+
+// ---------- Email send ----------
+const SendEmailSchema = z.object({
+  to: z.string().email(),
+  message: z.string().optional(),
+  replyTo: z.string().email().optional().or(z.literal("")),
+  markAsSent: z.boolean().optional().default(true),
+});
+
+documentsRouter.post(
+  "/:id/send-email",
+  zValidator("json", SendEmailSchema),
+  async (c) => {
+    const unauth = requireAuth(c);
+    if (unauth) return unauth;
+
+    const id = c.req.param("id");
+    const body = c.req.valid("json");
+
+    const doc = await prisma.document.findUnique({
+      where: { id },
+      include: { lines: { orderBy: { position: "asc" } } },
+    });
+    if (!doc) return c.json({ error: "Not found" }, 404);
+
+    const { subject, html } = renderDocumentEmail(doc, body.message);
+
+    try {
+      const result = await sendMail({
+        to: body.to,
+        subject,
+        html,
+        replyTo: body.replyTo || undefined,
+      });
+
+      // Flip to "sent" if appropriate
+      if (body.markAsSent && (doc.status === "draft" || doc.status === "accepted")) {
+        await prisma.document.update({
+          where: { id },
+          data: { status: "sent" },
+        });
+      }
+
+      return c.json({ data: { ok: true, dev: result.dev ?? false } });
+    } catch (err: any) {
+      return c.json(
+        { error: err?.message || "Échec de l'envoi de l'email" },
+        500,
+      );
+    }
+  },
+);
 
 documentsRouter.get("/_meta/next-number/:type", async (c) => {
   const unauth = requireAuth(c);
