@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Camera,
+  Image as ImageIcon,
   ChevronDown,
   Loader2,
   X,
@@ -75,6 +76,7 @@ export default function AddPhone() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const [sellerMode, setSellerMode] = useState<SellerMode>("new");
   const [selectedSellerId, setSelectedSellerId] = useState("");
@@ -195,6 +197,10 @@ export default function AddPhone() {
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
+    if (!photoUrl) {
+      toast.error("Une photo du téléphone est obligatoire");
+      return;
+    }
     createMutation.mutate();
   };
 
@@ -203,7 +209,7 @@ export default function AddPhone() {
     sellerMode === "existing"
       ? !!selectedSellerId
       : firstName && lastName && village && email.trim() && sellerPhone.trim() && contractAccepted && signature;
-  const phoneComplete = !!model && !!condition;
+  const phoneComplete = !!model && !!condition && !!photoUrl;
   const priceComplete = !!purchasePrice && !!resalePrice;
 
   return (
@@ -409,40 +415,87 @@ export default function AddPhone() {
               </div>
 
               <div>
-                <Label>Photo (optionnelle)</Label>
+                <Label>Photo *</Label>
                 {photoUrl ? (
-                  <div className="relative aspect-square max-w-[260px]">
-                    <img
-                      src={photoUrl}
-                      alt="Téléphone"
-                      className="w-full h-full object-cover rounded-md border hairline-border"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setPhotoUrl("")}
-                      className="absolute top-2 right-2 w-7 h-7 bg-background border hairline-border rounded-full flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-all"
-                      aria-label="Supprimer la photo"
-                    >
-                      <X className="w-3 h-3" strokeWidth={2} />
-                    </button>
+                  <div className="space-y-3 max-w-[260px]">
+                    <div className="relative aspect-square">
+                      <img
+                        src={photoUrl}
+                        alt="Téléphone"
+                        className="w-full h-full object-cover rounded-md border hairline-border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setPhotoUrl("")}
+                        className="absolute top-2 right-2 w-7 h-7 bg-background border hairline-border rounded-full flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-all"
+                        aria-label="Supprimer la photo"
+                      >
+                        <X className="w-3 h-3" strokeWidth={2} />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => cameraInputRef.current?.click()}
+                        className="inline-flex items-center justify-center gap-1.5 px-2 py-1.5 border hairline-border rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-all"
+                      >
+                        <Camera className="w-3 h-3" strokeWidth={1.8} />
+                        Reprendre
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="inline-flex items-center justify-center gap-1.5 px-2 py-1.5 border hairline-border rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-all"
+                      >
+                        <ImageIcon className="w-3 h-3" strokeWidth={1.8} />
+                        Galerie
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="group aspect-square max-w-[260px] w-full border border-dashed border-hairline rounded-md flex flex-col items-center justify-center gap-3 text-muted-foreground hover:border-foreground/40 hover:bg-foreground/5 transition-all duration-500 ease-out-expo bg-card"
-                  >
-                    <Camera className="w-6 h-6 group-hover:text-foreground transition-colors" strokeWidth={1.5} />
-                    <span className="text-[11px] uppercase tracking-wider">
-                      Ajouter une photo
-                    </span>
-                  </button>
+                  <div className="space-y-3 max-w-[260px]">
+                    <button
+                      type="button"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="group aspect-square w-full border border-dashed border-hairline rounded-md flex flex-col items-center justify-center gap-3 text-muted-foreground hover:border-foreground/40 hover:bg-foreground/5 transition-all duration-500 ease-out-expo bg-card"
+                    >
+                      <Camera className="w-7 h-7 group-hover:text-foreground transition-colors" strokeWidth={1.5} />
+                      <span className="text-[12px] font-medium text-foreground">
+                        Prendre en photo
+                      </span>
+                      <span className="text-[10px] uppercase tracking-wider">
+                        Caméra arrière
+                      </span>
+                    </button>
+                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+                      <div className="flex-1 h-px bg-hairline" />
+                      ou
+                      <div className="flex-1 h-px bg-hairline" />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 border hairline-border rounded-md text-[12px] font-medium text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-all bg-card"
+                    >
+                      <ImageIcon className="w-3.5 h-3.5" strokeWidth={1.8} />
+                      Choisir depuis la galerie
+                    </button>
+                  </div>
                 )}
+                {/* Camera input — forces the OS camera UI on mobile */}
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handlePhoto}
+                  className="hidden"
+                />
+                {/* Gallery input — file picker on every device */}
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
-                  capture="environment"
                   onChange={handlePhoto}
                   className="hidden"
                 />
