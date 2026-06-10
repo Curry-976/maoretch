@@ -20,6 +20,8 @@ import { api } from "@/lib/api";
 import { Seller, Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { SignaturePad } from "@/components/SignaturePad";
+import { PageMotion } from "@/components/ui/page-motion";
+import { MAYOTTE_VILLAGES } from "@/lib/villages";
 
 function Stepper({ steps }: { steps: { num: string; label: string; done: boolean }[] }) {
   return (
@@ -206,7 +208,13 @@ export default function AddPhone() {
 
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-8 md:py-12 space-y-8 max-w-[1100px]">
+      <PageMotion className="px-6 md:px-10 py-8 md:py-12 space-y-8 max-w-[1100px]">
+        {/* Mayotte villages preset for the village field datalist */}
+        <datalist id="mayotte-villages">
+          {MAYOTTE_VILLAGES.map((v) => (
+            <option key={v} value={v} />
+          ))}
+        </datalist>
         {/* Stepper header — no editorial big title */}
         <header className="space-y-5 pb-6 border-b hairline-border">
           <div className="flex items-center justify-between gap-4">
@@ -284,6 +292,7 @@ export default function AddPhone() {
                     onChange={setVillage}
                     placeholder="Mamoudzou"
                     icon={<MapPin className="w-3 h-3" />}
+                    list="mayotte-villages"
                   />
                   <Input
                     label="Email *"
@@ -523,7 +532,7 @@ export default function AddPhone() {
             </button>
           </div>
         </form>
-      </div>
+      </PageMotion>
     </Layout>
   );
 }
@@ -581,6 +590,7 @@ function Input({
   type = "text",
   placeholder,
   icon,
+  list,
 }: {
   label: string;
   value: string;
@@ -588,6 +598,7 @@ function Input({
   type?: string;
   placeholder?: string;
   icon?: ReactNode;
+  list?: string;
 }) {
   return (
     <div>
@@ -603,6 +614,7 @@ function Input({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
+          list={list}
           min={type === "number" ? 0 : undefined}
           className={`w-full ${
             icon ? "pl-9" : "pl-3.5"

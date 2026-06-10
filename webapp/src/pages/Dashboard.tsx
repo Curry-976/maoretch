@@ -25,6 +25,8 @@ import {
 import { api } from "@/lib/api";
 import { Client, DashboardStats, Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
+import { CountUp } from "@/components/ui/count-up";
+import { PageMotion, MotionItem } from "@/components/ui/page-motion";
 
 function eur(amount: number) {
   return new Intl.NumberFormat("fr-FR", {
@@ -103,7 +105,7 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-8 md:py-12 space-y-12 max-w-[1400px]">
+      <PageMotion className="px-6 md:px-10 py-8 md:py-12 space-y-12 max-w-[1400px]">
         {/* === DATE HERO — no editorial period, no italic-bold mash === */}
         <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-8 border-b hairline-border">
           <div className="space-y-4">
@@ -162,7 +164,11 @@ export default function Dashboard() {
               </div>
 
               <div className="font-display tabular text-[clamp(3.4rem,6vw,5.5rem)] leading-none tracking-tightest text-foreground">
-                {bigMoney(stats?.totalRevenue ?? 0)}
+                {!stats?.totalRevenue ? (
+                  "—"
+                ) : (
+                  <CountUp value={stats.totalRevenue} format={(n) => eur(n)} />
+                )}
               </div>
 
               <div className="flex items-center gap-4 text-sm">
@@ -237,7 +243,11 @@ export default function Dashboard() {
               </div>
 
               <div className="font-display tabular text-[clamp(2.6rem,4vw,3.6rem)] leading-none tracking-tightest text-ink-foreground">
-                {bigMoney(stats?.totalInventoryValue ?? 0)}
+                {!stats?.totalInventoryValue ? (
+                  "—"
+                ) : (
+                  <CountUp value={stats.totalInventoryValue} format={(n) => eur(n)} />
+                )}
               </div>
 
               <div className="space-y-3 pt-2 border-t border-sidebar-border">
@@ -255,6 +265,7 @@ export default function Dashboard() {
             icon={<Smartphone className="w-3.5 h-3.5" />}
             label="Téléphones"
             value={bigCount(stats?.totalPhones ?? 0)}
+            numericValue={stats?.totalPhones ?? 0}
             sub={`${stats?.forSaleCount ?? 0} en vente`}
             href="/phones"
           />
@@ -262,6 +273,7 @@ export default function Dashboard() {
             icon={<CheckCircle2 className="w-3.5 h-3.5" />}
             label="Vendus"
             value={String(stats?.soldCount ?? 0)}
+            numericValue={stats?.soldCount ?? 0}
             sub="Cumul"
             href="/phones"
           />
@@ -269,6 +281,7 @@ export default function Dashboard() {
             icon={<Users className="w-3.5 h-3.5" />}
             label="Clients"
             value={String(clients.length)}
+            numericValue={clients.length}
             sub={`${verifiedClients} vérifié${verifiedClients > 1 ? "s" : ""}`}
             href="/clients"
           />
@@ -276,6 +289,7 @@ export default function Dashboard() {
             icon={<Kanban className="w-3.5 h-3.5" />}
             label="Pipeline actif"
             value={String(stats?.forSaleCount ?? 0)}
+            numericValue={stats?.forSaleCount ?? 0}
             sub="Téléphones en mouvement"
             href="/pipeline"
             badge="Nouveau"
@@ -467,7 +481,7 @@ export default function Dashboard() {
             )}
           </>
         )}
-      </div>
+      </PageMotion>
     </Layout>
   );
 }
@@ -485,6 +499,7 @@ function Tile({
   icon,
   label,
   value,
+  numericValue,
   sub,
   href,
   badge,
@@ -492,6 +507,7 @@ function Tile({
   icon: React.ReactNode;
   label: string;
   value: string;
+  numericValue?: number;
   sub: string;
   href: string;
   badge?: string;
@@ -514,7 +530,9 @@ function Tile({
       <div className="mt-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
         {label}
       </div>
-      <div className="mt-1 font-display tabular text-3xl text-foreground tracking-tightest">{value}</div>
+      <div className="mt-1 font-display tabular text-3xl text-foreground tracking-tightest">
+        {numericValue && numericValue > 0 ? <CountUp value={numericValue} /> : value}
+      </div>
       <div className="mt-1 text-[11px] text-muted-foreground">{sub}</div>
       <ArrowUpRight
         className="absolute top-5 right-5 w-3 h-3 text-muted-foreground/30 opacity-0 group-hover:opacity-100 group-hover:text-foreground transition-all duration-500"

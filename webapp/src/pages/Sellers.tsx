@@ -15,6 +15,8 @@ import { api } from "@/lib/api";
 import { Seller, Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { EmptyState } from "@/components/ui/empty-state";
+import { PageMotion } from "@/components/ui/page-motion";
+import { CountUp } from "@/components/ui/count-up";
 import { GhostBand } from "@/components/ui/ghost-band";
 import { GHOST_SELLERS } from "@/lib/ghosts";
 
@@ -75,7 +77,7 @@ export default function Sellers() {
 
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-8 md:py-12 space-y-10 max-w-[1400px]">
+      <PageMotion className="px-6 md:px-10 py-8 md:py-12 space-y-10 max-w-[1400px]">
         {/* Data-as-title — the sentence IS the headline */}
         <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-8 border-b hairline-border">
           <div className="space-y-4 max-w-3xl">
@@ -193,7 +195,7 @@ export default function Sellers() {
             ))}
           </div>
         )}
-      </div>
+      </PageMotion>
     </Layout>
   );
 }

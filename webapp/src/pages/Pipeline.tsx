@@ -13,6 +13,7 @@ import {
 import { api } from "@/lib/api";
 import { Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
+import { PageMotion } from "@/components/ui/page-motion";
 import { GHOST_PIPELINE } from "@/lib/ghosts";
 
 function eur(n: number) {
@@ -100,7 +101,7 @@ export default function Pipeline() {
 
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-6 md:py-8 space-y-6 max-w-[1600px]">
+      <PageMotion className="px-6 md:px-10 py-6 md:py-8 space-y-6 max-w-[1600px]">
         {/* Counter rail — the title IS the data */}
         <header className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 pb-6 border-b hairline-border">
           <div className="space-y-3">
@@ -222,7 +223,7 @@ export default function Pipeline() {
             })}
           </section>
         )}
-      </div>
+      </PageMotion>
     </Layout>
   );
 }

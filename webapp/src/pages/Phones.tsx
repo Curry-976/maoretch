@@ -16,6 +16,7 @@ import { api } from "@/lib/api";
 import { Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { EmptyState } from "@/components/ui/empty-state";
+import { PageMotion } from "@/components/ui/page-motion";
 import { GhostBand } from "@/components/ui/ghost-band";
 import { GHOST_PHONES } from "@/lib/ghosts";
 
@@ -104,7 +105,7 @@ export default function Phones() {
 
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-8 md:py-12 space-y-8 max-w-[1400px]">
+      <PageMotion className="px-6 md:px-10 py-8 md:py-12 space-y-8 max-w-[1400px]">
         {/* Inline metadata header — looks like a ledger top-row */}
         <header className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 pb-6 border-b hairline-border">
           <div className="space-y-3">
@@ -232,7 +233,7 @@ export default function Phones() {
             ))}
           </div>
         )}
-      </div>
+      </PageMotion>
     </Layout>
   );
 }

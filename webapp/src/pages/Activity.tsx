@@ -11,6 +11,7 @@ import {
 import { api } from "@/lib/api";
 import { Layout } from "@/components/Layout";
 import { EmptyState } from "@/components/ui/empty-state";
+import { PageMotion } from "@/components/ui/page-motion";
 import { GhostBand } from "@/components/ui/ghost-band";
 import { GHOST_ACTIVITY } from "@/lib/ghosts";
 
@@ -143,7 +144,7 @@ export default function Activity() {
 
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-8 md:py-12 space-y-10 max-w-[1100px]">
+      <PageMotion className="px-6 md:px-10 py-8 md:py-12 space-y-10 max-w-[1100px]">
         {/* Calendar strip — the strip IS the title */}
         <header className="space-y-5 pb-8 border-b hairline-border">
           <div className="flex items-baseline justify-between gap-4 flex-wrap">
@@ -326,7 +327,7 @@ export default function Activity() {
             ))}
           </div>
         )}
-      </div>
+      </PageMotion>
     </Layout>
   );
 }

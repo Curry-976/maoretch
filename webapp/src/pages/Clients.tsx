@@ -19,6 +19,7 @@ import { api } from "@/lib/api";
 import { Client, ClientStatus } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { EmptyState } from "@/components/ui/empty-state";
+import { PageMotion } from "@/components/ui/page-motion";
 import { GhostBand } from "@/components/ui/ghost-band";
 import { GHOST_CLIENTS } from "@/lib/ghosts";
 
@@ -88,7 +89,7 @@ export default function Clients() {
 
   return (
     <Layout>
-      <div className="px-6 md:px-10 py-8 md:py-12 space-y-8 max-w-[1400px]">
+      <PageMotion className="px-6 md:px-10 py-8 md:py-12 space-y-8 max-w-[1400px]">
         {/* Tabs-as-title: the segmented control IS the H1 */}
         <header className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 pb-6 border-b hairline-border">
           <div className="space-y-3">
@@ -233,7 +234,7 @@ export default function Clients() {
             ))}
           </div>
         )}
-      </div>
+      </PageMotion>
 
       {openCreate && <CreateClientDialog onClose={() => setOpenCreate(false)} />}
       {confirmDelete && (
