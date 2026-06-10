@@ -27,8 +27,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Sidebar - desktop */}
       <aside className="hidden md:flex w-64 flex-col bg-sidebar border-r border-sidebar-border">
         <div className="p-6 border-b border-sidebar-border">
-          <Link to="/dashboard" className="flex items-center justify-center">
-            <BrandLogo size="md" tone="light" />
+          <Link to="/dashboard" className="flex items-center justify-center bg-white/95 rounded-xl px-3 py-4 shadow-lg">
+            <BrandLogo size="md" />
           </Link>
           <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mt-3 text-center">
             CRM · Gestion de revente
@@ -76,8 +76,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-sidebar border-b border-sidebar-border px-4 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <BrandLogo size="sm" tone="light" />
+        <div className="flex items-center gap-2 bg-white/95 rounded-md px-2 py-1">
+          <BrandLogo size="sm" />
         </div>
         <button onClick={() => setMobileOpen(!mobileOpen)} className="text-foreground">
           {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
