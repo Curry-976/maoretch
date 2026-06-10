@@ -20,6 +20,8 @@ import { Client, ClientStatus } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageMotion } from "@/components/ui/page-motion";
+import { CountUp } from "@/components/ui/count-up";
+import { SkeletonGrid } from "@/components/ui/skeleton";
 import { GhostBand } from "@/components/ui/ghost-band";
 import { GHOST_CLIENTS } from "@/lib/ghosts";
 
@@ -112,7 +114,7 @@ export default function Clients() {
                   >
                     <span className="flex items-baseline gap-2">
                       <span className="font-display tabular text-[clamp(1.8rem,3vw,2.6rem)] leading-none tracking-tightest">
-                        {count || "—"}
+                        {count ? <CountUp value={count} /> : "—"}
                       </span>
                       <span className="text-[14px] font-medium">{t.label}</span>
                     </span>
@@ -165,9 +167,7 @@ export default function Clients() {
 
         {/* List */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          </div>
+          <SkeletonGrid count={6} />
         ) : counts.all === 0 ? (
           <>
             <EmptyState

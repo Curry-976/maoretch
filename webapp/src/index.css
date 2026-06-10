@@ -193,6 +193,11 @@
   /* Selection */
 }
 
+@keyframes skeleton-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
 ::selection { background: hsl(213 78% 42% / 0.18); color: hsl(220 30% 10%); }
 ::-webkit-scrollbar { width: 12px; height: 12px; }
 ::-webkit-scrollbar-track { background: transparent; }

@@ -27,6 +27,7 @@ import { Client, DashboardStats, Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { CountUp } from "@/components/ui/count-up";
 import { PageMotion, MotionItem } from "@/components/ui/page-motion";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function eur(amount: number) {
   return new Intl.NumberFormat("fr-FR", {
@@ -76,8 +77,17 @@ export default function Dashboard() {
   if (isLoading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-full min-h-[60vh]">
-          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="px-6 md:px-10 py-8 md:py-12 space-y-12 max-w-[1400px]">
+          <Skeleton className="h-24 w-3/4" />
+          <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-5">
+            <Skeleton className="h-72" />
+            <Skeleton className="h-72" />
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-32" />
+            ))}
+          </div>
         </div>
       </Layout>
     );

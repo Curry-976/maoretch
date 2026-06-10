@@ -12,6 +12,8 @@ import { api } from "@/lib/api";
 import { Layout } from "@/components/Layout";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageMotion } from "@/components/ui/page-motion";
+import { CountUp } from "@/components/ui/count-up";
+import { SkeletonRows } from "@/components/ui/skeleton";
 import { GhostBand } from "@/components/ui/ghost-band";
 import { GHOST_ACTIVITY } from "@/lib/ghosts";
 
@@ -157,7 +159,7 @@ export default function Activity() {
             </div>
             <div className="text-[12px] text-muted-foreground">
               <span className="font-display tabular text-foreground text-2xl mr-1.5">
-                {totalWeek || "—"}
+                {totalWeek ? <CountUp value={totalWeek} /> : "—"}
               </span>
               événement{totalWeek > 1 ? "s" : ""} cette semaine
             </div>
@@ -199,9 +201,7 @@ export default function Activity() {
         </header>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          </div>
+          <SkeletonRows count={4} rowHeight="h-20" />
         ) : events.length === 0 ? (
           <>
             <EmptyState

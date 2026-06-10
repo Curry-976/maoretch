@@ -17,15 +17,17 @@ import { Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageMotion } from "@/components/ui/page-motion";
+import { CountUp } from "@/components/ui/count-up";
+import { SkeletonRows } from "@/components/ui/skeleton";
 import { GhostBand } from "@/components/ui/ghost-band";
 import { GHOST_PHONES } from "@/lib/ghosts";
 
 function Datum({ value, label, wide = false }: { value: number | string; label: string; wide?: boolean }) {
-  const display = typeof value === "number" ? (value === 0 ? "—" : String(value)) : value;
+  const isNumberZero = typeof value === "number" && value === 0;
   return (
     <div className="flex items-baseline gap-1.5">
       <span className={`font-display tabular leading-none ${wide ? "text-3xl" : "text-3xl"} text-foreground tracking-tightest`}>
-        {display}
+        {isNumberZero ? "—" : typeof value === "number" ? <CountUp value={value} /> : value}
       </span>
       <span className="text-[12px] text-muted-foreground">{label}</span>
     </div>
@@ -172,9 +174,7 @@ export default function Phones() {
 
         {/* List */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
+          <SkeletonRows count={5} rowHeight="h-[82px]" />
         ) : phones.length === 0 ? (
           <>
             <EmptyState

@@ -14,6 +14,8 @@ import { api } from "@/lib/api";
 import { Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { PageMotion } from "@/components/ui/page-motion";
+import { CountUp } from "@/components/ui/count-up";
+import { Skeleton } from "@/components/ui/skeleton";
 import { GHOST_PIPELINE } from "@/lib/ghosts";
 
 function eur(n: number) {
@@ -116,7 +118,7 @@ export default function Pipeline() {
                 return (
                   <div key={lane.key} className="flex items-baseline gap-2">
                     <span className="font-display tabular text-4xl text-foreground leading-none">
-                      {n || "—"}
+                      {n ? <CountUp value={n} /> : "—"}
                     </span>
                     <span className="text-[12px] text-muted-foreground capitalize">{lane.label.toLowerCase()}</span>
                   </div>
@@ -127,7 +129,7 @@ export default function Pipeline() {
                   Valeur totale
                 </div>
                 <div className="font-display tabular text-2xl text-foreground tracking-tight">
-                  {totalValue ? eur(totalValue) : "—"}
+                  {totalValue ? <CountUp value={totalValue} format={(n) => eur(n)} /> : "—"}
                 </div>
               </div>
             </div>
@@ -142,9 +144,11 @@ export default function Pipeline() {
         </header>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} className="h-[400px]" />
+            ))}
+          </section>
         ) : (
           <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {lanes.map((lane) => {

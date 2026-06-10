@@ -17,6 +17,7 @@ import { Layout } from "@/components/Layout";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageMotion } from "@/components/ui/page-motion";
 import { CountUp } from "@/components/ui/count-up";
+import { SkeletonGrid } from "@/components/ui/skeleton";
 import { GhostBand } from "@/components/ui/ghost-band";
 import { GHOST_SELLERS } from "@/lib/ghosts";
 
@@ -86,11 +87,11 @@ export default function Sellers() {
             </div>
             {stats.total > 0 ? (
               <h1 className="font-display text-[clamp(2.2rem,3.6vw,3rem)] leading-[1.05] text-foreground tracking-tightest text-balance">
-                <span className="tabular">{stats.total}</span>{" "}
+                <span className="tabular"><CountUp value={stats.total} /></span>{" "}
                 <span className="text-muted-foreground/70 font-normal">vendeur{stats.total > 1 ? "s" : ""} dans</span>{" "}
-                <span className="tabular">{stats.villages}</span>{" "}
+                <span className="tabular"><CountUp value={stats.villages} /></span>{" "}
                 <span className="text-muted-foreground/70 font-normal">village{stats.villages > 1 ? "s" : ""} —</span>{" "}
-                <span className="font-italic font-normal">{eur(stats.totalRevenue)}</span>{" "}
+                <span className="font-italic font-normal"><CountUp value={stats.totalRevenue} format={(n) => eur(n)} /></span>{" "}
                 <span className="text-muted-foreground/70 font-normal">générés.</span>
               </h1>
             ) : (
@@ -150,9 +151,7 @@ export default function Sellers() {
 
         {/* Content */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          </div>
+          <SkeletonGrid count={6} />
         ) : enriched.length === 0 ? (
           <>
             <EmptyState
