@@ -54,3 +54,45 @@ export type CreatePhone = z.infer<typeof CreatePhoneSchema>;
 export type UpdatePhone = z.infer<typeof UpdatePhoneSchema>;
 export type CreateClient = z.infer<typeof CreateClientSchema>;
 export type UpdateClient = z.infer<typeof UpdateClientSchema>;
+
+// ---------- Documents (Devis / Factures) ----------
+export const DocumentType = z.enum(["quote", "invoice"]);
+export const DocumentStatus = z.enum([
+  "draft",
+  "sent",
+  "accepted",
+  "paid",
+  "cancelled",
+]);
+
+export const DocumentLineSchema = z.object({
+  label: z.string().min(1),
+  description: z.string().optional().or(z.literal("")),
+  quantity: z.number().positive().default(1),
+  unitPrice: z.number().min(0),
+  position: z.number().int().default(0),
+});
+
+export const CreateDocumentSchema = z.object({
+  type: DocumentType,
+  clientId: z.string().optional().or(z.literal("")),
+  clientName: z.string().min(1),
+  clientEmail: z.string().optional().or(z.literal("")),
+  clientPhone: z.string().optional().or(z.literal("")),
+  clientAddress: z.string().optional().or(z.literal("")),
+  issuedAt: z.string().optional(),
+  dueAt: z.string().optional(),
+  status: DocumentStatus.optional(),
+  taxRate: z.number().min(0).max(100).default(0),
+  notes: z.string().optional().or(z.literal("")),
+  paymentTerms: z.string().optional().or(z.literal("")),
+  paymentMethod: z.string().optional().or(z.literal("")),
+  lines: z.array(DocumentLineSchema).min(1, "Au moins une ligne requise"),
+});
+
+export const UpdateDocumentSchema = CreateDocumentSchema.partial().extend({
+  lines: z.array(DocumentLineSchema).optional(),
+});
+
+export type CreateDocument = z.infer<typeof CreateDocumentSchema>;
+export type UpdateDocument = z.infer<typeof UpdateDocumentSchema>;

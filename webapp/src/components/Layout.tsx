@@ -15,6 +15,7 @@ import {
   Bell,
   Command,
   Shield,
+  FileText,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -53,6 +54,12 @@ const sections: Section[] = [
     items: [
       { path: "/sellers", label: "Vendeurs", icon: UserCog },
       { path: "/clients", label: "Clients", icon: Users },
+    ],
+  },
+  {
+    label: "Commercial",
+    items: [
+      { path: "/documents", label: "Devis & factures", icon: FileText },
     ],
   },
   {

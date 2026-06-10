@@ -83,13 +83,69 @@ model Client {
   email       String?
   phone       String?
   village     String?
+  address     String?
   status      String   @default("pending") // pending | verified
   notes       String?
   verifiedAt  DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  documents   Document[]
 
   @@index([status])
+}
+
+model Document {
+  id            String   @id @default(cuid())
+  type          String   // "quote" | "invoice"
+  number        String   @unique  // DEV-2026-001 / FAC-2026-001
+  issuedAt      DateTime @default(now())
+  dueAt         DateTime?
+  status        String   @default("draft") // draft | sent | accepted | paid | cancelled
+
+  clientId      String?
+  client        Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  // Snapshot of client info at creation (so editing the client later doesn't
+  // alter past documents)
+  clientName    String
+  clientEmail   String?
+  clientPhone   String?
+  clientAddress String?
+
+  subtotal      Float    @default(0)
+  taxRate       Float    @default(0)  // % (0 by default, Mayotte often 0)
+  taxAmount     Float    @default(0)
+  total         Float    @default(0)
+
+  notes         String?
+  paymentTerms  String?
+  paidAt        DateTime?
+  paymentMethod String?  // "cash" | "transfer" | "card" | "other"
+
+  lines         DocumentLine[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([type])
+  @@index([status])
+  @@index([clientId])
+}
+
+model DocumentLine {
+  id          String   @id @default(cuid())
+  documentId  String
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  label       String
+  description String?
+  quantity    Float    @default(1)
+  unitPrice   Float    @default(0)
+  total       Float    @default(0)
+  position    Int      @default(0)
+
+  createdAt   DateTime @default(now())
+
+  @@index([documentId])
 }
 
 model Phone {

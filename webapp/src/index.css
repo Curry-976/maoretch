@@ -198,6 +198,26 @@
   100% { transform: translateX(100%); }
 }
 
+/* Print : only the .document-print block prints, on white, full bleed. */
+@media print {
+  @page { margin: 14mm 12mm; size: A4; }
+  body { background: white !important; }
+  body::before { display: none !important; }
+  aside, .print\:hidden { display: none !important; }
+  main { padding-top: 0 !important; }
+  .document-print {
+    background: white !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    color: black !important;
+  }
+  .document-print * { color: black !important; }
+  .document-print .text-muted-foreground { color: #555 !important; }
+}
+
 ::selection { background: hsl(213 78% 42% / 0.18); color: hsl(220 30% 10%); }
 ::-webkit-scrollbar { width: 12px; height: 12px; }
 ::-webkit-scrollbar-track { background: transparent; }

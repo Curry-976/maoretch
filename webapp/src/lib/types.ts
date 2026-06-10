@@ -41,6 +41,45 @@ export interface Client {
   updatedAt: string;
 }
 
+export type DocumentType = "quote" | "invoice";
+export type DocumentStatus = "draft" | "sent" | "accepted" | "paid" | "cancelled";
+
+export interface DocumentLine {
+  id: string;
+  label: string;
+  description: string | null;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+  position: number;
+}
+
+export interface SalesDocument {
+  id: string;
+  type: DocumentType;
+  number: string;
+  issuedAt: string;
+  dueAt: string | null;
+  status: DocumentStatus;
+  clientId: string | null;
+  client: Client | null;
+  clientName: string;
+  clientEmail: string | null;
+  clientPhone: string | null;
+  clientAddress: string | null;
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  total: number;
+  notes: string | null;
+  paymentTerms: string | null;
+  paidAt: string | null;
+  paymentMethod: string | null;
+  lines: DocumentLine[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface DashboardStats {
   totalPhones: number;
   soldCount: number;

@@ -15,6 +15,9 @@ import Pipeline from "@/pages/Pipeline";
 import Sellers from "@/pages/Sellers";
 import Activity from "@/pages/Activity";
 import Users from "@/pages/Users";
+import Documents from "@/pages/Documents";
+import DocumentEditor from "@/pages/DocumentEditor";
+import DocumentView from "@/pages/DocumentView";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -53,6 +56,10 @@ function AnimatedRoutes() {
           <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
           <Route path="/activity" element={<ProtectedRoute><Activity /></ProtectedRoute>} />
           <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
+          <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
+          <Route path="/documents/new" element={<ProtectedRoute><DocumentEditor /></ProtectedRoute>} />
+          <Route path="/documents/:id" element={<ProtectedRoute><DocumentView /></ProtectedRoute>} />
+          <Route path="/documents/:id/edit" element={<ProtectedRoute><DocumentEditor /></ProtectedRoute>} />
           {/* Old OTP route — redirect to login for users who still have the URL bookmarked */}
           <Route path="/verify-otp" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<NotFound />} />
