@@ -63,6 +63,19 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        paper: {
+          DEFAULT: "hsl(var(--paper))",
+          foreground: "hsl(var(--paper-foreground))",
+        },
+        hairline: "hsl(var(--hairline))",
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -71,7 +84,9 @@ export default {
       },
       fontFamily: {
         sans: ["DM Sans", "sans-serif"],
-        heading: ["Bebas Neue", "sans-serif"],
+        heading: ["Instrument Serif", "serif"],
+        wordmark: ["Bebas Neue", "sans-serif"],
+        mono: ["JetBrains Mono", "ui-monospace", "monospace"],
         syne: ["Syne", "sans-serif"],
       },
       keyframes: {

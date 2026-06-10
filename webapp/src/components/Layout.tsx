@@ -1,15 +1,24 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Smartphone, PlusCircle, LogOut, Menu, X, Users, Loader2 } from "lucide-react";
+import {
+  LayoutDashboard,
+  Smartphone,
+  PlusCircle,
+  LogOut,
+  Menu,
+  X,
+  Users,
+  Loader2,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { signOut, useSession } from "@/lib/auth-client";
 import { BrandLogo } from "@/components/Brand";
 
 const navItems = [
-  { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/add-phone", label: "Ajouter Téléphone", icon: PlusCircle },
-  { path: "/phones", label: "Gestion Téléphones", icon: Smartphone },
-  { path: "/clients", label: "Clients", icon: Users },
+  { path: "/dashboard", label: "Tableau de bord", num: "01", icon: LayoutDashboard },
+  { path: "/add-phone", label: "Ajouter téléphone", num: "02", icon: PlusCircle },
+  { path: "/phones", label: "Téléphones", num: "03", icon: Smartphone },
+  { path: "/clients", label: "Clients", num: "04", icon: Users },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -25,7 +34,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
       await signOut({
         fetchOptions: {
           onSuccess: () => {
-            // Hard reload clears React Query cache and any stale session state.
             window.location.href = "/login";
           },
           onError: (ctx: { error?: { message?: string } }) => {
@@ -44,82 +52,115 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar - desktop */}
-      <aside className="hidden md:flex w-64 flex-col bg-sidebar border-r border-sidebar-border">
-        <div className="p-6 border-b border-sidebar-border">
-          <Link to="/dashboard" className="flex items-center justify-center bg-white/95 rounded-xl px-3 py-4 shadow-lg">
-            <BrandLogo size="md" />
+      <aside className="hidden md:flex w-[212px] flex-col bg-sidebar/60 backdrop-blur-2xl border-r hairline">
+        <div className="p-5 pt-7">
+          <Link to="/dashboard" className="block group">
+            <div className="paper-tile rounded-md p-3 transition-transform duration-500 ease-out-expo group-hover:-translate-y-0.5">
+              <BrandLogo size="md" className="mx-auto" />
+            </div>
+            <div className="mt-4 flex items-center gap-2 font-mono-kicker text-[9px] text-muted-foreground">
+              <span className="h-px flex-1 bg-hairline" />
+              <span>CRM 2026</span>
+              <span className="h-px flex-1 bg-hairline" />
+            </div>
           </Link>
-          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mt-3 text-center">
-            CRM · Gestion de revente
-          </p>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map(({ path, label, icon: Icon }) => {
+        <nav className="flex-1 px-3 py-2 space-y-0.5">
+          {navItems.map(({ path, label, num, icon: Icon }) => {
             const active = location.pathname === path;
             return (
               <Link
                 key={path}
                 to={path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                  active
-                    ? "bg-primary text-primary-foreground shadow-lg"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                className={`group relative flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium transition-all duration-300 ease-out-expo rounded-sm ${
+                  active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon className="w-4 h-4 flex-shrink-0" />
-                {label}
+                {/* Active rule on the left */}
+                <span
+                  className={`absolute left-0 top-1/2 -translate-y-1/2 w-[2px] rounded-full bg-primary transition-all duration-500 ease-out-expo ${
+                    active ? "h-6 opacity-100" : "h-2 opacity-0 group-hover:opacity-40"
+                  }`}
+                />
+                <span className="font-mono-kicker text-[9px] text-muted-foreground/70 w-5">
+                  {num}
+                </span>
+                <Icon className="w-3.5 h-3.5 flex-shrink-0 opacity-80" strokeWidth={1.5} />
+                <span>{label}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-sidebar-border">
-          <div className="flex items-center gap-3 mb-3 px-2">
-            <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-semibold text-foreground">
+        <div className="p-4 border-t hairline">
+          <div className="flex items-center gap-3 mb-3 px-1">
+            <div className="w-7 h-7 rounded-full bg-secondary/60 border hairline flex items-center justify-center text-[10px] font-semibold text-foreground">
               {session?.user?.email?.[0]?.toUpperCase() ?? "U"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">{session?.user?.email}</p>
+              <p className="font-mono-kicker text-[8px] text-muted-foreground">Session</p>
+              <p className="text-[11px] font-medium text-foreground truncate">
+                {session?.user?.email}
+              </p>
             </div>
           </div>
           <button
             onClick={handleSignOut}
             disabled={signingOut}
-            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all disabled:opacity-50 disabled:cursor-wait"
+            className="w-full flex items-center justify-between gap-3 px-3 py-2 text-[11px] font-medium text-muted-foreground hover:text-foreground border hairline hover:border-destructive/40 transition-all duration-300 ease-out-expo rounded-sm disabled:opacity-50 disabled:cursor-wait"
           >
-            {signingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
-            {signingOut ? "Déconnexion..." : "Déconnexion"}
+            <span className="flex items-center gap-2">
+              {signingOut ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <LogOut className="w-3 h-3" strokeWidth={1.5} />
+              )}
+              {signingOut ? "Déconnexion…" : "Se déconnecter"}
+            </span>
+            <span className="font-mono-kicker text-[8px]">↵</span>
           </button>
         </div>
       </aside>
 
       {/* Mobile header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-sidebar border-b border-sidebar-border px-4 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-2 bg-white/95 rounded-md px-2 py-1">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b hairline px-4 h-14 flex items-center justify-between">
+        <Link to="/dashboard" className="paper-tile rounded-sm px-2 py-1.5">
           <BrandLogo size="sm" />
-        </div>
-        <button onClick={() => setMobileOpen(!mobileOpen)} className="text-foreground">
-          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </Link>
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="w-9 h-9 flex items-center justify-center border hairline rounded-sm text-foreground"
+        >
+          {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
         </button>
       </div>
 
       {/* Mobile menu overlay */}
       {mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-background/80 backdrop-blur-sm" onClick={() => setMobileOpen(false)}>
-          <div className="absolute top-14 left-0 right-0 bg-sidebar border-b border-sidebar-border p-4 space-y-1" onClick={(e) => e.stopPropagation()}>
-            {navItems.map(({ path, label, icon: Icon }) => {
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-background/80 backdrop-blur-md"
+          onClick={() => setMobileOpen(false)}
+        >
+          <div
+            className="absolute top-14 left-0 right-0 bg-background border-b hairline p-5 space-y-1"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {navItems.map(({ path, label, num, icon: Icon }) => {
               const active = location.pathname === path;
               return (
                 <Link
                   key={path}
                   to={path}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                    active ? "bg-primary text-primary-foreground" : "text-sidebar-foreground hover:bg-sidebar-accent"
+                  className={`flex items-center gap-3 px-3 py-3 text-sm font-medium transition-all rounded-sm ${
+                    active ? "bg-secondary/60 text-foreground" : "text-muted-foreground"
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <span className="font-mono-kicker text-[9px] text-muted-foreground/70 w-5">
+                    {num}
+                  </span>
+                  <Icon className="w-4 h-4" strokeWidth={1.5} />
                   {label}
                 </Link>
               );
@@ -127,19 +168,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <button
               onClick={handleSignOut}
               disabled={signingOut}
-              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-destructive rounded-lg disabled:opacity-50 disabled:cursor-wait"
+              className="w-full flex items-center gap-3 px-3 py-3 mt-3 text-sm text-muted-foreground hover:text-destructive border-t hairline disabled:opacity-50 disabled:cursor-wait"
             >
-              {signingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
-              {signingOut ? "Déconnexion..." : "Déconnexion"}
+              {signingOut ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <LogOut className="w-4 h-4" strokeWidth={1.5} />
+              )}
+              {signingOut ? "Déconnexion…" : "Se déconnecter"}
             </button>
           </div>
         </div>
       )}
 
       {/* Main content */}
-      <main className="flex-1 md:overflow-auto pt-14 md:pt-0">
-        {children}
-      </main>
+      <main className="flex-1 md:overflow-auto pt-14 md:pt-0">{children}</main>
     </div>
   );
 }
