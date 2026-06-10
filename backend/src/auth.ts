@@ -30,14 +30,15 @@ export const auth = betterAuth({
   baseURL: stripSlash(env.BACKEND_URL),
   trustedOrigins,
 
-  // Email + password is the only login method. Public sign-up is disabled —
-  // only an authenticated admin can create new users.
+  // Email + password is the only login method. We keep sign-up technically
+  // enabled at the API level so the server can create users programmatically
+  // (bootstrap admin + the admin plugin's createUser). The webapp doesn't
+  // expose any sign-up UI, so this is invisible to end users.
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
     minPasswordLength: 8,
     requireEmailVerification: false,
-    disableSignUp: true,
   },
 
   plugins: [
