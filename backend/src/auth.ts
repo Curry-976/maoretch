@@ -44,15 +44,31 @@ async function sendOtpEmail(email: string, otp: string) {
 
 const isProd = process.env.NODE_ENV === "production";
 
+// Railway sets RAILWAY_PUBLIC_DOMAIN automatically (e.g. "maoretch-production.up.railway.app").
+// Trust it so we don't depend on BACKEND_URL being a perfect string match.
+const railwayPublic = process.env.RAILWAY_PUBLIC_DOMAIN
+  ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+  : undefined;
+
+const stripSlash = (u?: string) => u?.replace(/\/$/, "");
+
+const trustedOrigins = Array.from(
+  new Set(
+    [
+      "http://localhost:*",
+      "http://127.0.0.1:*",
+      "https://*.up.railway.app",
+      stripSlash(env.BACKEND_URL),
+      stripSlash(railwayPublic),
+    ].filter((v): v is string => Boolean(v)),
+  ),
+);
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "sqlite" }),
   secret: env.BETTER_AUTH_SECRET,
-  baseURL: env.BACKEND_URL,
-  trustedOrigins: [
-    "http://localhost:*",
-    "http://127.0.0.1:*",
-    env.BACKEND_URL,
-  ].filter(Boolean) as string[],
+  baseURL: stripSlash(env.BACKEND_URL),
+  trustedOrigins,
   plugins: [
     emailOTP({
       otpLength: 6,
