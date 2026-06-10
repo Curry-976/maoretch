@@ -7,7 +7,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { GuestRoute } from "@/components/GuestRoute";
 import Login from "@/pages/Login";
-import VerifyOtp from "@/pages/VerifyOtp";
 import Dashboard from "@/pages/Dashboard";
 import AddPhone from "@/pages/AddPhone";
 import Phones from "@/pages/Phones";
@@ -15,6 +14,7 @@ import Clients from "@/pages/Clients";
 import Pipeline from "@/pages/Pipeline";
 import Sellers from "@/pages/Sellers";
 import Activity from "@/pages/Activity";
+import Users from "@/pages/Users";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,7 +33,6 @@ function AnimatedRoutes() {
         <Routes location={location}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
-          <Route path="/verify-otp" element={<GuestRoute><VerifyOtp /></GuestRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/pipeline" element={<ProtectedRoute><Pipeline /></ProtectedRoute>} />
           <Route path="/add-phone" element={<ProtectedRoute><AddPhone /></ProtectedRoute>} />
@@ -41,6 +40,9 @@ function AnimatedRoutes() {
           <Route path="/sellers" element={<ProtectedRoute><Sellers /></ProtectedRoute>} />
           <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
           <Route path="/activity" element={<ProtectedRoute><Activity /></ProtectedRoute>} />
+          <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
+          {/* Old OTP route — redirect to login for users who still have the URL bookmarked */}
+          <Route path="/verify-otp" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.div>

@@ -9,6 +9,8 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM: z.string().optional(),
   WEBAPP_DIST_DIR: z.string().optional(),
+  BOOTSTRAP_ADMIN_EMAIL: z.string().email().optional(),
+  BOOTSTRAP_ADMIN_PASSWORD: z.string().min(8).optional(),
 });
 
 function validateEnv() {

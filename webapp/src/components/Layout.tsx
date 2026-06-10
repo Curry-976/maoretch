@@ -14,13 +14,24 @@ import {
   Search,
   Bell,
   Command,
+  Shield,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { signOut, useSession } from "@/lib/auth-client";
 import { BrandLogo } from "@/components/Brand";
 
-const sections = [
+type NavItem = {
+  path: string;
+  label: string;
+  icon: React.ElementType;
+  badge?: string;
+  adminOnly?: boolean;
+};
+
+type Section = { label: string; items: NavItem[]; adminOnly?: boolean };
+
+const sections: Section[] = [
   {
     label: "Aperçu",
     items: [
@@ -43,6 +54,11 @@ const sections = [
       { path: "/clients", label: "Clients", icon: Users },
     ],
   },
+  {
+    label: "Administration",
+    adminOnly: true,
+    items: [{ path: "/users", label: "Utilisateurs", icon: Shield, adminOnly: true }],
+  },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -50,6 +66,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+
+  const isAdmin = (session?.user as { role?: string } | undefined)?.role === "admin";
+  const visibleSections = sections.filter((s) => !s.adminOnly || isAdmin);
 
   const handleSignOut = async () => {
     if (signingOut) return;
@@ -118,7 +137,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-3 space-y-5 overflow-y-auto">
-          {sections.map((section) => (
+          {visibleSections.map((section) => (
             <div key={section.label}>
               <div className="px-3 mb-2 text-[10px] uppercase tracking-[0.16em] text-ink-foreground/40 font-medium">
                 {section.label}
@@ -221,7 +240,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             className="absolute top-16 left-0 right-0 ink-surface p-4 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
-            {sections.map((section) => (
+            {visibleSections.map((section) => (
               <div key={section.label}>
                 <div className="px-3 mb-1.5 text-[10px] uppercase tracking-[0.16em] text-ink-foreground/40 font-medium">
                   {section.label}

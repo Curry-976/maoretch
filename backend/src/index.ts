@@ -10,6 +10,7 @@ import { phonesRouter } from "./routes/phones";
 import { dashboardRouter } from "./routes/dashboard";
 import { clientsRouter } from "./routes/clients";
 import { activityRouter } from "./routes/activity";
+import { bootstrapAdmin } from "./bootstrap";
 
 const app = new Hono<{
   Variables: {
@@ -68,6 +69,9 @@ app.use("/*", serveStatic({ root: webappDir }));
 app.get("*", serveStatic({ path: `${webappDir}/index.html` }));
 
 const port = Number(process.env.PORT) || 3000;
+
+// Bootstrap the first admin on boot (fire-and-forget, errors logged).
+bootstrapAdmin().catch((err) => console.error("[bootstrap] failed:", err));
 
 export default {
   port,
