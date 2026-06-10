@@ -16,6 +16,8 @@ import { api } from "@/lib/api";
 import { Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { EmptyState } from "@/components/ui/empty-state";
+import { GhostBand } from "@/components/ui/ghost-band";
+import { GHOST_PHONES } from "@/lib/ghosts";
 
 function Datum({ value, label, wide = false }: { value: number | string; label: string; wide?: boolean }) {
   const display = typeof value === "number" ? (value === 0 ? "—" : String(value)) : value;
@@ -173,26 +175,36 @@ export default function Phones() {
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : phones.length === 0 ? (
-          <EmptyState
-            eyebrow="Inventaire vide"
-            title="Le premier téléphone"
-            italic="n'attend que vous"
-            body={
-              <>
-                Chaque appareil enregistré ici garde sa trace : qui l'a vendu, son état,
-                son coût, sa marge. Aucune saisie tableur ; tout tient en deux minutes.
-              </>
-            }
-            action={
-              <Link
-                to="/add-phone"
-                className="btn-magnetic inline-flex items-center gap-2 px-5 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-ink/90"
-              >
-                <Plus className="w-3.5 h-3.5" strokeWidth={2} />
-                Enregistrer un téléphone
-              </Link>
-            }
-          />
+          <>
+            <EmptyState
+              eyebrow="Inventaire vide"
+              title="Le premier téléphone"
+              italic="n'attend que vous"
+              body={
+                <>
+                  Chaque appareil enregistré ici garde sa trace : qui l'a vendu, son
+                  état, son coût, sa marge. Aucune saisie tableur ; tout tient en deux
+                  minutes.
+                </>
+              }
+              action={
+                <Link
+                  to="/add-phone"
+                  className="btn-magnetic inline-flex items-center gap-2 px-5 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-ink/90"
+                >
+                  <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+                  Enregistrer un téléphone
+                </Link>
+              }
+            />
+            <GhostBand>
+              <div className="space-y-2">
+                {GHOST_PHONES.map((p) => (
+                  <GhostPhoneRow key={p.id} phone={p} />
+                ))}
+              </div>
+            </GhostBand>
+          </>
         ) : filtered.length === 0 ? (
           <div className="card-soft rounded-lg py-16 text-center">
             <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
@@ -336,5 +348,52 @@ function DetailCell({ label, value }: { label: string; value: string }) {
       <div className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="font-display tabular text-lg text-foreground mt-1">{value}</div>
     </div>
+  );
+}
+
+function GhostPhoneRow({
+  phone,
+}: {
+  phone: {
+    model: string;
+    condition: string;
+    seller: { firstName: string; lastName: string; village: string };
+    purchase: number;
+    repair: number;
+    resale: number;
+    status: "for_sale" | "sold";
+  };
+}) {
+  const margin = phone.resale - phone.purchase - phone.repair;
+  const isSold = phone.status === "sold";
+  return (
+    <article className="card-soft rounded-lg p-4 flex items-center gap-4">
+      <div className="w-14 h-14 rounded-md bg-secondary border hairline-border flex items-center justify-center text-muted-foreground/40">
+        <SmartphoneIcon className="w-5 h-5" strokeWidth={1.5} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <h3 className="font-display text-lg text-foreground tracking-tight truncate">
+            {phone.model}
+          </h3>
+          <span
+            className={`text-[9px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded ${
+              isSold ? "bg-success/10 text-success" : "bg-foreground/8 text-foreground"
+            }`}
+          >
+            {isSold ? "Vendu" : "En vente"}
+          </span>
+        </div>
+        <div className="text-[12px] text-muted-foreground mt-1 truncate">
+          {phone.seller.firstName} {phone.seller.lastName} ·{" "}
+          <span className="text-muted-foreground/70">{phone.seller.village}</span> ·{" "}
+          <span className="text-muted-foreground/70">{phone.condition}</span>
+        </div>
+      </div>
+      <div className="hidden sm:block text-right min-w-[120px]">
+        <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Marge</div>
+        <div className="font-display tabular text-xl text-foreground">+{eur(margin)}</div>
+      </div>
+    </article>
   );
 }

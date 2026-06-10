@@ -11,6 +11,8 @@ import {
 import { api } from "@/lib/api";
 import { Layout } from "@/components/Layout";
 import { EmptyState } from "@/components/ui/empty-state";
+import { GhostBand } from "@/components/ui/ghost-band";
+import { GHOST_ACTIVITY } from "@/lib/ghosts";
 
 type Event = {
   id: string;
@@ -200,20 +202,62 @@ export default function Activity() {
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
         ) : events.length === 0 ? (
-          <EmptyState
-            eyebrow="Aucune activité"
-            title="Le journal s'écrit dès le premier"
-            italic="mouvement"
-            body={
-              <>
-                Ajoutez un téléphone, marquez une vente, vérifiez un client — chaque action
-                viendra alimenter ce fil chronologique en temps réel.
-              </>
-            }
-            illustration={
-              <ActivityIcon className="w-32 h-32 text-foreground/15" strokeWidth={1} />
-            }
-          />
+          <>
+            <EmptyState
+              eyebrow="Aucune activité"
+              title="Le journal s'écrit dès le premier"
+              italic="mouvement"
+              body={
+                <>
+                  Ajoutez un téléphone, marquez une vente, vérifiez un client — chaque
+                  action viendra alimenter ce fil chronologique en temps réel.
+                </>
+              }
+              illustration={
+                <ActivityIcon className="w-32 h-32 text-foreground/15" strokeWidth={1} />
+              }
+            />
+            <GhostBand>
+              <div className="space-y-3 pl-8 relative">
+                <div className="absolute left-[15px] top-2 bottom-2 w-px bg-hairline" />
+                {GHOST_ACTIVITY.map((g, i) => {
+                  const cfg = typeConfig[g.type];
+                  const Icon = cfg.icon;
+                  return (
+                    <article key={i} className="relative card-soft rounded-md p-4">
+                      <div
+                        className={`absolute -left-8 top-4 w-[30px] h-[30px] rounded-full ${cfg.bg} ring-4 ring-background flex items-center justify-center ${cfg.ring}`}
+                      >
+                        <Icon className={`w-3.5 h-3.5 ${cfg.iconColor}`} strokeWidth={2} />
+                      </div>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-medium text-foreground text-[14px]">
+                            {g.title}
+                          </h3>
+                          {g.subtitle && (
+                            <div className="text-[12px] text-muted-foreground mt-1">
+                              {g.subtitle}
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          {g.amount !== undefined && (
+                            <div className="font-display tabular text-base text-foreground">
+                              {eur(g.amount)}
+                            </div>
+                          )}
+                          <div className="text-[10px] text-muted-foreground/70 uppercase tracking-wider mt-0.5">
+                            {g.when}
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </GhostBand>
+          </>
         ) : (
           <div className="space-y-10">
             {groups.map((group) => (

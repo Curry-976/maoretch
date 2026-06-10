@@ -13,6 +13,7 @@ import {
 import { api } from "@/lib/api";
 import { Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
+import { GHOST_PIPELINE } from "@/lib/ghosts";
 
 function eur(n: number) {
   return new Intl.NumberFormat("fr-FR", {
@@ -189,12 +190,19 @@ export default function Pipeline() {
                   {/* Lane content */}
                   <div className="p-3 flex-1 space-y-2.5 max-h-[600px] overflow-y-auto">
                     {items.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-12 text-center">
-                        <div className="w-10 h-10 rounded-full bg-secondary/60 flex items-center justify-center mb-3">
-                          <Icon className="w-4 h-4 text-muted-foreground/50" strokeWidth={1.5} />
+                      <div className="space-y-2.5">
+                        <div className="text-center pt-2 pb-3">
+                          <div className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/60 font-medium">
+                            Aucun appareil — aperçu
+                          </div>
                         </div>
-                        <div className="text-[12px] text-muted-foreground">
-                          Aucun appareil
+                        <div
+                          className="space-y-2.5 pointer-events-none select-none opacity-35 [filter:saturate(0.7)]"
+                          aria-hidden
+                        >
+                          {GHOST_PIPELINE[lane.key].map((g, i) => (
+                            <GhostLaneCard key={i} ghost={g} />
+                          ))}
                         </div>
                       </div>
                     ) : (
@@ -284,6 +292,41 @@ function PhoneKanbanCard({
             Remettre en vente
           </button>
         )}
+      </div>
+    </article>
+  );
+}
+
+function GhostLaneCard({
+  ghost,
+}: {
+  ghost: { model: string; seller: string; village: string; margin: number };
+}) {
+  return (
+    <article className="bg-card border hairline-border rounded-md p-3">
+      <div className="flex gap-3">
+        <div className="w-12 h-12 rounded-md bg-secondary border hairline-border flex items-center justify-center text-muted-foreground/40 flex-shrink-0">
+          <SmartphoneIcon className="w-4 h-4" strokeWidth={1.5} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-medium text-foreground text-[13px] truncate">{ghost.model}</div>
+          <div className="text-[11px] text-muted-foreground truncate mt-0.5">
+            {ghost.seller}
+          </div>
+          <div className="text-[10px] text-muted-foreground/70 uppercase tracking-wider mt-0.5">
+            {ghost.village}
+          </div>
+        </div>
+      </div>
+      <div className="mt-3 pt-3 border-t hairline-border flex items-center justify-between">
+        <div>
+          <div className="text-[9px] uppercase tracking-wider text-muted-foreground">
+            Marge prév.
+          </div>
+          <div className="font-display tabular text-base text-foreground">
+            +{eur(ghost.margin)}
+          </div>
+        </div>
       </div>
     </article>
   );

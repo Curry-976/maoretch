@@ -19,6 +19,8 @@ import { api } from "@/lib/api";
 import { Client, ClientStatus } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { EmptyState } from "@/components/ui/empty-state";
+import { GhostBand } from "@/components/ui/ghost-band";
+import { GHOST_CLIENTS } from "@/lib/ghosts";
 
 type Tab = "all" | "verified" | "pending";
 
@@ -166,27 +168,49 @@ export default function Clients() {
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
         ) : counts.all === 0 ? (
-          <EmptyState
-            eyebrow="CRM vide"
-            title="Aucun client"
-            italic="encore"
-            body={
-              <>
-                Ajoutez un premier contact — un vendeur démarché, un acheteur revenu deux
-                fois, un prospect repéré au marché. Marquez-le « vérifié » dès qu'il a
-                validé.
-              </>
-            }
-            action={
-              <button
-                onClick={() => setOpenCreate(true)}
-                className="btn-magnetic inline-flex items-center gap-2 px-5 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-ink/90"
-              >
-                <Plus className="w-3.5 h-3.5" strokeWidth={2} />
-                Créer un client
-              </button>
-            }
-          />
+          <>
+            <EmptyState
+              eyebrow="CRM vide"
+              title="Aucun client"
+              italic="encore"
+              body={
+                <>
+                  Ajoutez un premier contact — un vendeur démarché, un acheteur revenu
+                  deux fois, un prospect repéré au marché. Marquez-le « vérifié » dès
+                  qu'il a validé.
+                </>
+              }
+              action={
+                <button
+                  onClick={() => setOpenCreate(true)}
+                  className="btn-magnetic inline-flex items-center gap-2 px-5 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-ink/90"
+                >
+                  <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+                  Créer un client
+                </button>
+              }
+            />
+            <GhostBand>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {GHOST_CLIENTS.map((client) => (
+                  <ClientCard
+                    key={client.id}
+                    client={
+                      {
+                        ...client,
+                        verifiedAt: null,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                      } as any
+                    }
+                    onToggle={() => {}}
+                    onDelete={() => {}}
+                    pending={false}
+                  />
+                ))}
+              </div>
+            </GhostBand>
+          </>
         ) : filtered.length === 0 ? (
           <div className="card-soft rounded-lg py-16 text-center">
             <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">

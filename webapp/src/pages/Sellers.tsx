@@ -15,6 +15,8 @@ import { api } from "@/lib/api";
 import { Seller, Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { EmptyState } from "@/components/ui/empty-state";
+import { GhostBand } from "@/components/ui/ghost-band";
+import { GHOST_SELLERS } from "@/lib/ghosts";
 
 function eur(n: number) {
   return new Intl.NumberFormat("fr-FR", {
@@ -150,27 +152,40 @@ export default function Sellers() {
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
         ) : enriched.length === 0 ? (
-          <EmptyState
-            eyebrow="Aucun vendeur enregistré"
-            title="Vos vendeurs apparaîtront"
-            italic="ici"
-            body={
-              <>
-                Dès que vous enregistrez un téléphone d'un nouveau vendeur, il rejoint
-                cette page automatiquement. Vous y verrez son contrat signé, ses villages
-                d'origine, et le chiffre d'affaires qu'il vous aura permis de générer.
-              </>
-            }
-            action={
-              <Link
-                to="/add-phone"
-                className="btn-magnetic inline-flex items-center gap-2 px-5 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-ink/90"
-              >
-                <Plus className="w-3.5 h-3.5" strokeWidth={2} />
-                Enregistrer un premier téléphone
-              </Link>
-            }
-          />
+          <>
+            <EmptyState
+              eyebrow="Aucun vendeur enregistré"
+              title="Vos vendeurs apparaîtront"
+              italic="ici"
+              body={
+                <>
+                  Dès que vous enregistrez un téléphone d'un nouveau vendeur, il rejoint
+                  cette page automatiquement. Vous y verrez son contrat signé, ses
+                  villages d'origine, et le chiffre d'affaires qu'il vous aura permis de
+                  générer.
+                </>
+              }
+              action={
+                <Link
+                  to="/add-phone"
+                  className="btn-magnetic inline-flex items-center gap-2 px-5 py-3 ink-surface rounded-md text-[13px] font-medium hover:bg-ink/90"
+                >
+                  <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+                  Enregistrer un premier téléphone
+                </Link>
+              }
+            />
+            <GhostBand>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {GHOST_SELLERS.map((seller) => (
+                  <SellerCard
+                    key={seller.id}
+                    seller={seller as unknown as SellerWithStats}
+                  />
+                ))}
+              </div>
+            </GhostBand>
+          </>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {filtered.map((seller) => (
