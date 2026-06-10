@@ -1,29 +1,37 @@
-import { useState, useRef } from "react";
+import { useState, useRef, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Camera, ChevronDown, Loader2, X, Check, Plus } from "lucide-react";
 import { api } from "@/lib/api";
 import { Seller, Phone } from "@/lib/types";
 import { Layout } from "@/components/Layout";
-import { toast } from "sonner";
-import { Camera, User, Smartphone, DollarSign, ChevronDown, Loader2, X, Check, Plus, FileSignature, Mail, Phone as PhoneIcon } from "lucide-react";
 import { SignaturePad } from "@/components/SignaturePad";
+import { PageHeader } from "@/components/ui/page-header";
 
 const CONDITIONS = [
   { value: "Neuf", label: "Neuf" },
-  { value: "Très bon état", label: "Très bon état" },
-  { value: "Bon état", label: "Bon état" },
+  { value: "Très bon état", label: "Très bon" },
+  { value: "Bon état", label: "Bon" },
   { value: "Usagé", label: "Usagé" },
   { value: "À réparer", label: "À réparer" },
 ];
 
 type SellerMode = "new" | "existing";
 
+function eur(n: number) {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 0,
+  }).format(n);
+}
+
 export default function AddPhone() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Seller fields
   const [sellerMode, setSellerMode] = useState<SellerMode>("new");
   const [selectedSellerId, setSelectedSellerId] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -34,7 +42,6 @@ export default function AddPhone() {
   const [signature, setSignature] = useState<string | null>(null);
   const [contractAccepted, setContractAccepted] = useState(false);
 
-  // Phone fields
   const [model, setModel] = useState("");
   const [condition, setCondition] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string>("");
@@ -75,12 +82,10 @@ export default function AddPhone() {
       queryClient.invalidateQueries({ queryKey: ["phones"] });
       queryClient.invalidateQueries({ queryKey: ["sellers"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
-      toast.success("Téléphone ajouté avec succès !");
+      toast.success("Téléphone ajouté");
       navigate("/phones");
     },
-    onError: (err: Error) => {
-      toast.error(err.message || "Erreur lors de l'ajout");
-    },
+    onError: (err: Error) => toast.error(err.message || "Erreur lors de l'ajout"),
   });
 
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,10 +97,18 @@ export default function AddPhone() {
       img.onload = () => {
         const canvas = document.createElement("canvas");
         const MAX = 800;
-        let w = img.width, h = img.height;
-        if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-        if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
-        canvas.width = w; canvas.height = h;
+        let w = img.width;
+        let h = img.height;
+        if (w > MAX) {
+          h = Math.round((h * MAX) / w);
+          w = MAX;
+        }
+        if (h > MAX) {
+          w = Math.round((w * MAX) / h);
+          h = MAX;
+        }
+        canvas.width = w;
+        canvas.height = h;
         const ctx = canvas.getContext("2d")!;
         ctx.drawImage(img, 0, 0, w, h);
         setPhotoUrl(canvas.toDataURL("image/jpeg", 0.7));
@@ -105,9 +118,10 @@ export default function AddPhone() {
     reader.readAsDataURL(file);
   };
 
-  const margin = purchasePrice && resalePrice
-    ? parseFloat(resalePrice) - parseFloat(purchasePrice) - (parseFloat(repairPrice) || 0)
-    : null;
+  const margin =
+    purchasePrice && resalePrice
+      ? parseFloat(resalePrice) - parseFloat(purchasePrice) - (parseFloat(repairPrice) || 0)
+      : null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,247 +156,366 @@ export default function AddPhone() {
 
   return (
     <Layout>
-      <div className="p-6 md:p-8 max-w-3xl">
-        <div className="mb-8">
-          <h1 className="font-heading text-4xl text-foreground tracking-wide">AJOUTER UN TÉLÉPHONE</h1>
-          <p className="text-muted-foreground mt-1">Enregistrez un nouveau téléphone à revendre</p>
-        </div>
+      <div className="px-6 md:px-10 py-8 md:py-10 space-y-14 max-w-[1100px]">
+        <PageHeader
+          num="02"
+          kicker="Nouvel appareil"
+          title="Enregistrer un"
+          emphasis="téléphone"
+          subline={
+            <>
+              Démarchage, état, prix, marge — tout tient dans une seule passe. Si le
+              vendeur est nouveau, vous recueillez aussi sa signature de cession.
+            </>
+          }
+        />
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Section: Seller info */}
-          <div className="bg-card border border-border rounded-xl p-6 space-y-5">
-            <div className="flex items-center gap-2 mb-2">
-              <User className="w-5 h-5 text-primary" />
-              <h2 className="font-heading text-xl text-foreground tracking-wide">INFORMATIONS VENDEUR</h2>
-            </div>
-
-            {/* Toggle new/existing */}
-            <div className="flex gap-2">
+        <form onSubmit={handleSubmit} className="space-y-16">
+          {/* Section 01 — Vendeur */}
+          <Section num="01" kicker="Vendeur" title="Qui cède l'appareil ?">
+            <div className="flex gap-0 border hairline w-fit">
               {(["new", "existing"] as SellerMode[]).map((mode) => (
                 <button
                   key={mode}
                   type="button"
                   onClick={() => setSellerMode(mode)}
-                  className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-                    sellerMode === mode ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`px-5 py-2.5 text-[11px] font-mono-kicker transition-all duration-300 ease-out-expo ${
+                    sellerMode === mode
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:text-foreground"
+                  } ${mode === "existing" ? "border-l hairline" : ""}`}
                 >
-                  {mode === "new" ? (
-                    <span className="flex items-center justify-center gap-1"><Plus className="w-3.5 h-3.5" /> Nouveau vendeur</span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-1"><User className="w-3.5 h-3.5" /> Vendeur existant</span>
-                  )}
+                  {mode === "new" ? "Nouveau vendeur" : "Vendeur existant"}
                 </button>
               ))}
             </div>
 
             {sellerMode === "existing" ? (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Sélectionner un vendeur</label>
+              <div className="max-w-md">
+                <FieldLabel>Sélectionner un vendeur</FieldLabel>
                 <div className="relative">
                   <select
                     value={selectedSellerId}
                     onChange={(e) => setSelectedSellerId(e.target.value)}
                     required
-                    className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                    className="w-full px-0 py-3 bg-transparent border-0 border-b hairline focus:outline-none focus:border-primary text-foreground appearance-none text-sm transition-colors"
                   >
-                    <option value="">-- Choisir un vendeur --</option>
+                    <option value="" className="bg-background">— Choisir un vendeur —</option>
                     {sellers.map((s) => (
-                      <option key={s.id} value={s.id}>
+                      <option key={s.id} value={s.id} className="bg-background">
                         {s.firstName} {s.lastName} ({s.village})
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  <ChevronDown
+                    strokeWidth={1.2}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none"
+                  />
                 </div>
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Prénom *</label>
-                    <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Jean"
-                      className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Nom *</label>
-                    <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Dupont"
-                      className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
-                  </div>
-                  <div className="space-y-2 sm:col-span-2">
-                    <label className="text-sm font-medium text-foreground">Village *</label>
-                    <input type="text" value={village} onChange={(e) => setVillage(e.target.value)} placeholder="Conakry"
-                      className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                      <Mail className="w-3.5 h-3.5" /> Email *
-                    </label>
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vendeur@exemple.com"
-                      className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                      <PhoneIcon className="w-3.5 h-3.5" /> Téléphone *
-                    </label>
-                    <input type="tel" value={sellerPhone} onChange={(e) => setSellerPhone(e.target.value)} placeholder="+224 6XX XX XX XX"
-                      className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
+                  <UnderlinedField
+                    label="Prénom *"
+                    value={firstName}
+                    onChange={setFirstName}
+                    placeholder="Mamadou"
+                  />
+                  <UnderlinedField
+                    label="Nom *"
+                    value={lastName}
+                    onChange={setLastName}
+                    placeholder="Diallo"
+                  />
+                  <UnderlinedField
+                    label="Village *"
+                    value={village}
+                    onChange={setVillage}
+                    placeholder="Conakry"
+                  />
+                  <UnderlinedField
+                    label="Email *"
+                    value={email}
+                    onChange={setEmail}
+                    type="email"
+                    placeholder="vendeur@exemple.com"
+                  />
+                  <UnderlinedField
+                    label="Téléphone *"
+                    value={sellerPhone}
+                    onChange={setSellerPhone}
+                    type="tel"
+                    placeholder="+224 6XX XX XX XX"
+                  />
                 </div>
 
-                {/* Contract + signature */}
-                <div className="space-y-3 pt-2 border-t border-border">
-                  <div className="flex items-center gap-2">
-                    <FileSignature className="w-4 h-4 text-primary" />
-                    <h3 className="font-medium text-foreground">Contrat de cession</h3>
-                  </div>
-                  <div className="bg-background border border-border rounded-lg p-4 max-h-40 overflow-y-auto text-xs text-muted-foreground leading-relaxed space-y-2">
-                    <p>
-                      Le vendeur soussigné, <strong className="text-foreground">{firstName || "[Prénom]"} {lastName || "[Nom]"}</strong>,
-                      domicilié à <strong className="text-foreground">{village || "[Village]"}</strong>, joignable au{" "}
-                      <strong className="text-foreground">{sellerPhone || "[téléphone]"}</strong>
-                      {email ? <> et à l'adresse <strong className="text-foreground">{email}</strong></> : null},
-                      déclare céder à <strong className="text-foreground">Maore-Tech</strong> le ou les téléphones
-                      mobiles décrits dans le présent enregistrement, en pleine propriété, libres de tout gage et de
-                      toute opposition.
-                    </p>
-                    <p>
-                      Le vendeur certifie être le propriétaire légitime des appareils et garantit Maore-Tech contre
-                      tout recours d'un tiers. Le prix convenu est celui inscrit ci-dessous, et son règlement vaut
-                      transfert immédiat de propriété. Toute fausse déclaration engage la responsabilité du vendeur.
-                    </p>
+                {/* Contract */}
+                <div className="pt-10 mt-10 border-t hairline space-y-6">
+                  <div className="flex items-baseline gap-3">
+                    <div className="font-mono-kicker text-[10px] text-muted-foreground">
+                      Contrat de cession
+                    </div>
+                    <span className="h-px flex-1 bg-hairline max-w-[160px]" />
                   </div>
 
-                  <label className="flex items-start gap-2 text-sm text-foreground cursor-pointer select-none">
+                  <article className="paper-tile rounded-sm p-8 max-w-[640px]">
+                    <div className="font-mono-kicker text-[9px] text-paper-foreground/60 mb-4">
+                      Acte de cession — Maore-Tech
+                    </div>
+                    <div className="space-y-4 text-[14px] text-paper-foreground leading-relaxed">
+                      <p>
+                        Le vendeur soussigné,{" "}
+                        <strong className="font-medium">
+                          {firstName || "[Prénom]"} {lastName || "[Nom]"}
+                        </strong>
+                        , domicilié à{" "}
+                        <strong className="font-medium">{village || "[Village]"}</strong>,
+                        joignable au{" "}
+                        <strong className="font-medium">{sellerPhone || "[téléphone]"}</strong>
+                        {email ? (
+                          <>
+                            {" "}
+                            et à l'adresse{" "}
+                            <strong className="font-medium">{email}</strong>
+                          </>
+                        ) : null}
+                        , déclare céder à <em>Maore-Tech</em> le téléphone décrit ci-après,
+                        en pleine propriété, libre de tout gage.
+                      </p>
+                      <p>
+                        Il certifie en être le propriétaire légitime et garantit l'acquéreur
+                        contre tout recours d'un tiers. Le prix convenu, ci-dessous, vaut
+                        transfert immédiat de propriété au règlement.
+                      </p>
+                    </div>
+                  </article>
+
+                  <label className="flex items-start gap-3 text-sm text-foreground cursor-pointer select-none max-w-[640px]">
                     <input
                       type="checkbox"
                       checked={contractAccepted}
                       onChange={(e) => setContractAccepted(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 rounded border-border accent-primary"
+                      className="mt-0.5 w-4 h-4 rounded-none border-foreground/30 accent-primary"
                     />
-                    <span>Le vendeur a lu et accepte les termes du contrat ci-dessus.</span>
+                    <span className="leading-relaxed">
+                      Le vendeur a lu et accepte les termes du contrat ci-dessus.
+                    </span>
                   </label>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Signature du vendeur *</label>
+                  <div className="max-w-[640px]">
+                    <FieldLabel>Signature du vendeur *</FieldLabel>
                     <SignaturePad value={signature} onChange={setSignature} />
                   </div>
                 </div>
               </>
             )}
-          </div>
+          </Section>
 
-          {/* Section: Phone info */}
-          <div className="bg-card border border-border rounded-xl p-6 space-y-5">
-            <div className="flex items-center gap-2 mb-2">
-              <Smartphone className="w-5 h-5 text-primary" />
-              <h2 className="font-heading text-xl text-foreground tracking-wide">INFORMATIONS TÉLÉPHONE</h2>
-            </div>
+          {/* Section 02 — Appareil */}
+          <Section num="02" kicker="Appareil" title="Le téléphone, en détail.">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-12">
+              <div className="space-y-8">
+                <UnderlinedField
+                  label="Modèle *"
+                  value={model}
+                  onChange={setModel}
+                  placeholder="iPhone 13 Pro, Samsung Galaxy S22…"
+                />
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Modèle *</label>
-              <input type="text" value={model} onChange={(e) => setModel(e.target.value)} placeholder="iPhone 13 Pro, Samsung Galaxy S22..." required
-                className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
-            </div>
+                <div>
+                  <FieldLabel>État *</FieldLabel>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-0 border hairline">
+                    {CONDITIONS.map((c, i) => (
+                      <button
+                        key={c.value}
+                        type="button"
+                        onClick={() => setCondition(c.value)}
+                        className={`py-3 px-2 text-[10px] font-mono-kicker transition-all duration-300 ease-out-expo ${
+                          condition === c.value
+                            ? "bg-foreground text-background"
+                            : "text-muted-foreground hover:text-foreground"
+                        } ${i > 0 ? "border-l hairline" : ""}`}
+                      >
+                        {c.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">État *</label>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                {CONDITIONS.map((c) => (
+              {/* Photo */}
+              <div>
+                <FieldLabel>Photo (optionnelle)</FieldLabel>
+                {photoUrl ? (
+                  <div className="relative w-full max-w-[280px] aspect-square border hairline">
+                    <img
+                      src={photoUrl}
+                      alt="Téléphone"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPhotoUrl("")}
+                      className="absolute top-2 right-2 w-7 h-7 bg-background/90 border hairline flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-all duration-300"
+                      aria-label="Supprimer la photo"
+                    >
+                      <X className="w-3 h-3" strokeWidth={1.5} />
+                    </button>
+                  </div>
+                ) : (
                   <button
-                    key={c.value}
                     type="button"
-                    onClick={() => setCondition(c.value)}
-                    className={`py-2 px-3 rounded-lg text-sm font-medium border transition-all text-center ${
-                      condition === c.value
-                        ? "bg-primary border-primary text-primary-foreground"
-                        : "bg-secondary border-border text-muted-foreground hover:border-primary/50"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="group w-full max-w-[280px] aspect-square border hairline border-dashed flex flex-col items-center justify-center gap-3 text-muted-foreground hover:border-foreground/40 hover:text-foreground transition-all duration-500 ease-out-expo"
+                  >
+                    <Camera className="w-5 h-5" strokeWidth={1.2} />
+                    <span className="font-mono-kicker text-[10px]">
+                      Ajouter une photo
+                    </span>
+                  </button>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handlePhoto}
+                  className="hidden"
+                />
+              </div>
+            </div>
+          </Section>
+
+          {/* Section 03 — Prix */}
+          <Section num="03" kicker="Économie" title="Le prix de l'opération.">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-10 gap-y-8 max-w-[720px]">
+              <UnderlinedField
+                label="Prix d'achat (€) *"
+                value={purchasePrice}
+                onChange={setPurchasePrice}
+                type="number"
+                placeholder="0"
+              />
+              <UnderlinedField
+                label="Réparation (€)"
+                value={repairPrice}
+                onChange={setRepairPrice}
+                type="number"
+                placeholder="0"
+              />
+              <UnderlinedField
+                label="Revente (€) *"
+                value={resalePrice}
+                onChange={setResalePrice}
+                type="number"
+                placeholder="0"
+              />
+            </div>
+
+            {margin !== null && (
+              <div className="border-t hairline pt-8 max-w-[720px]">
+                <div className="font-mono-kicker text-[10px] text-muted-foreground mb-3">
+                  Marge estimée
+                </div>
+                <div className="flex items-baseline gap-4">
+                  <span
+                    className={`font-heading text-6xl italic tabular leading-none ${
+                      margin >= 0 ? "text-foreground" : "text-destructive"
                     }`}
                   >
-                    {c.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Photo upload */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Photo du téléphone</label>
-              {photoUrl ? (
-                <div className="relative w-40 h-40">
-                  <img src={photoUrl} alt="Téléphone" className="w-full h-full object-cover rounded-xl border border-border" />
-                  <button type="button" onClick={() => setPhotoUrl("")}
-                    className="absolute -top-2 -right-2 w-6 h-6 bg-destructive rounded-full flex items-center justify-center hover:bg-destructive/80 transition-colors">
-                    <X className="w-3 h-3 text-white" />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-40 h-40 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary hover:text-primary transition-all"
-                >
-                  <Camera className="w-8 h-8" />
-                  <span className="text-xs text-center px-2">Ajouter une photo</span>
-                </button>
-              )}
-              <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} className="hidden" />
-            </div>
-          </div>
-
-          {/* Section: Prices */}
-          <div className="bg-card border border-border rounded-xl p-6 space-y-5">
-            <div className="flex items-center gap-2 mb-2">
-              <DollarSign className="w-5 h-5 text-primary" />
-              <h2 className="font-heading text-xl text-foreground tracking-wide">PRIX</h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Prix d'achat (€) *</label>
-                <input type="number" value={purchasePrice} onChange={(e) => setPurchasePrice(e.target.value)} placeholder="0" min="0" required
-                  className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Prix réparation (€)</label>
-                <input type="number" value={repairPrice} onChange={(e) => setRepairPrice(e.target.value)} placeholder="0" min="0"
-                  className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Prix de revente (€) *</label>
-                <input type="number" value={resalePrice} onChange={(e) => setResalePrice(e.target.value)} placeholder="0" min="0" required
-                  className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" />
-              </div>
-            </div>
-
-            {/* Margin preview */}
-            {margin !== null && (
-              <div className={`p-4 rounded-lg border ${margin >= 0 ? "bg-green-500/10 border-green-500/20" : "bg-destructive/10 border-destructive/20"}`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground">Marge estimée</span>
-                  <span className={`text-lg font-bold ${margin >= 0 ? "text-green-400" : "text-destructive"}`}>
-                    {margin >= 0 ? "+" : ""}{new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(margin)}
+                    {margin >= 0 ? "+" : ""}
+                    {eur(margin)}
                   </span>
+                  {margin < 0 && (
+                    <span className="text-xs text-destructive/80">
+                      Prix de revente sous le coût total.
+                    </span>
+                  )}
                 </div>
-                {margin < 0 && <p className="text-xs text-destructive/70 mt-1">Attention : prix de revente inférieur au coût total</p>}
               </div>
             )}
-          </div>
+          </Section>
 
           {/* Submit */}
-          <button
-            type="submit"
-            disabled={createMutation.isPending}
-            className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-base hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            {createMutation.isPending ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <><Check className="w-5 h-5" /> Enregistrer le téléphone</>
-            )}
-          </button>
+          <div className="pt-8 border-t hairline flex justify-end">
+            <button
+              type="submit"
+              disabled={createMutation.isPending}
+              className="group inline-flex items-center gap-3 px-6 py-3.5 bg-foreground text-background text-sm font-medium hover:bg-foreground/95 disabled:opacity-40 transition-all duration-500 ease-out-expo"
+            >
+              {createMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <Check className="w-4 h-4" strokeWidth={1.5} />
+                  Enregistrer le téléphone
+                  <span className="font-mono-kicker text-[9px] opacity-50">↵</span>
+                </>
+              )}
+            </button>
+          </div>
         </form>
       </div>
     </Layout>
+  );
+}
+
+function Section({
+  num,
+  kicker,
+  title,
+  children,
+}: {
+  num: string;
+  kicker: string;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="space-y-8">
+      <header className="flex items-baseline gap-4">
+        <span className="font-mono-kicker text-[10px] text-muted-foreground">
+          {num} — {kicker}
+        </span>
+        <span className="h-px flex-1 bg-hairline max-w-[200px]" />
+        <h2 className="font-heading text-3xl text-foreground italic">{title}</h2>
+      </header>
+      <div className="space-y-6">{children}</div>
+    </section>
+  );
+}
+
+function FieldLabel({ children }: { children: ReactNode }) {
+  return (
+    <div className="font-mono-kicker text-[9px] text-muted-foreground mb-2">{children}</div>
+  );
+}
+
+function UnderlinedField({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <FieldLabel>{label}</FieldLabel>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        min={type === "number" ? 0 : undefined}
+        className="w-full px-0 py-2 bg-transparent border-0 border-b hairline focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground/40 text-sm transition-colors duration-300 ease-out-expo"
+      />
+    </div>
   );
 }

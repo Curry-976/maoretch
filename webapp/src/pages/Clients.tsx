@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  Users,
   Plus,
   Search,
   Mail,
@@ -19,13 +18,16 @@ import {
 import { api } from "@/lib/api";
 import { Client, ClientStatus } from "@/lib/types";
 import { Layout } from "@/components/Layout";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatStrip } from "@/components/ui/stat-strip";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type Tab = "all" | "verified" | "pending";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "all", label: "Tous" },
   { key: "verified", label: "Vérifiés" },
-  { key: "pending", label: "Non vérifiés" },
+  { key: "pending", label: "En attente" },
 ];
 
 export default function Clients() {
@@ -68,7 +70,7 @@ export default function Clients() {
     mutationFn: ({ id, status }: { id: string; status: ClientStatus }) =>
       api.patch<Client>(`/api/clients/${id}`, { status }),
     onSuccess: (_, vars) => {
-      toast.success(vars.status === "verified" ? "Client vérifié" : "Client repassé en attente");
+      toast.success(vars.status === "verified" ? "Client vérifié" : "Repassé en attente");
       queryClient.invalidateQueries({ queryKey: ["clients"] });
     },
     onError: (err: Error) => toast.error(err.message || "Erreur"),
@@ -84,71 +86,156 @@ export default function Clients() {
     onError: (err: Error) => toast.error(err.message || "Erreur"),
   });
 
+  const hasData = clients.length > 0;
+
   return (
     <Layout>
-      <div className="p-6 md:p-8 space-y-6">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="font-heading text-4xl text-foreground tracking-wide flex items-center gap-3">
-              <Users className="w-8 h-8 text-primary" /> CLIENTS
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              {clients.length} client(s) — {counts.verified} vérifié(s), {counts.pending} en attente
-            </p>
-          </div>
-          <button
-            onClick={() => setOpenCreate(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all shadow-lg"
-          >
-            <Plus className="w-4 h-4" /> Nouveau client
-          </button>
-        </div>
+      <div className="px-6 md:px-10 py-8 md:py-10 space-y-14 max-w-[1400px]">
+        <PageHeader
+          num="04"
+          kicker="CRM"
+          title="Vos"
+          emphasis="clients"
+          subline={
+            hasData
+              ? `${counts.all} contact${counts.all > 1 ? "s" : ""} — ${counts.verified} démarché${
+                  counts.verified > 1 ? "s" : ""
+                } et validé${counts.verified > 1 ? "s" : ""}, ${counts.pending} en attente.`
+              : "Un client vérifié est quelqu'un que vous avez démarché et qui a validé. Les autres restent en attente jusqu'à confirmation."
+          }
+          actions={
+            <button
+              onClick={() => setOpenCreate(true)}
+              className="group flex items-center gap-2 px-4 py-2.5 border hairline hover:border-primary text-foreground text-xs font-mono-kicker transition-all duration-500 ease-out-expo"
+            >
+              <Plus className="w-3 h-3" strokeWidth={1.5} />
+              Nouveau client
+              <span className="opacity-50 group-hover:translate-x-0.5 transition-transform duration-500 ease-out-expo">
+                →
+              </span>
+            </button>
+          }
+        />
+
+        {hasData && (
+          <>
+            <StatStrip
+              hero={{
+                kicker: "Carnet d'adresses",
+                value: String(counts.all),
+                sub: "contacts enregistrés",
+              }}
+              stats={[
+                {
+                  kicker: "Vérifiés",
+                  value: String(counts.verified),
+                  sub: "Démarchés & validés",
+                  emphasis: "positive",
+                },
+                {
+                  kicker: "En attente",
+                  value: String(counts.pending),
+                  sub: "À recontacter",
+                },
+                {
+                  kicker: "Taux de validation",
+                  value: `${
+                    counts.all > 0 ? Math.round((counts.verified / counts.all) * 100) : 0
+                  }%`,
+                  sub: "Vérifiés / Total",
+                },
+              ]}
+            />
+            <div className="h-px bg-hairline" />
+          </>
+        )}
 
         {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-          <div className="relative w-full sm:max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher (nom, email, téléphone, village)..."
-              className="w-full pl-9 pr-4 py-2.5 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
-            />
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 font-mono-kicker text-[10px] text-muted-foreground">
+            <span>05 — Liste & filtres</span>
+            <span className="h-px flex-1 bg-hairline max-w-[120px]" />
           </div>
-          <div className="flex bg-secondary/50 border border-border rounded-lg p-1 gap-1">
-            {TABS.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wide transition-all ${
-                  tab === t.key
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t.label} ({counts[t.key]})
-              </button>
-            ))}
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+            <div className="flex-1 max-w-md">
+              <div className="font-mono-kicker text-[9px] text-muted-foreground mb-2">
+                Recherche
+              </div>
+              <div className="relative">
+                <Search
+                  strokeWidth={1.2}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground"
+                />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Nom, email, téléphone, village…"
+                  className="w-full pl-6 pr-4 py-2.5 bg-transparent border-0 border-b hairline focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground/40 text-sm transition-colors duration-300 ease-out-expo"
+                />
+              </div>
+            </div>
+            <div className="flex gap-0 border hairline">
+              {TABS.map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => setTab(t.key)}
+                  className={`px-4 py-2 font-mono-kicker text-[10px] transition-all duration-300 ease-out-expo ${
+                    tab === t.key
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t.label} <span className="opacity-50 ml-1">({counts[t.key]})</span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        </section>
 
         {/* List */}
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
           </div>
+        ) : !hasData ? (
+          <EmptyState
+            kicker="CRM vide"
+            title={
+              <>
+                Aucun client <span className="italic">encore</span>
+              </>
+            }
+            body={
+              <>
+                Ajoutez un premier contact — un vendeur démarché, un acheteur revenu deux
+                fois, un prospect repéré au marché. Marquez-le « vérifié » dès qu'il a
+                validé. Le reste suit naturellement.
+              </>
+            }
+            action={
+              <button
+                onClick={() => setOpenCreate(true)}
+                className="group inline-flex items-center gap-2 px-5 py-3 border hairline hover:border-primary text-foreground text-sm font-medium transition-all duration-500 ease-out-expo"
+              >
+                <Plus className="w-3.5 h-3.5" strokeWidth={1.5} />
+                Créer un client
+                <span className="font-mono-kicker text-[9px] text-muted-foreground group-hover:translate-x-1 transition-transform duration-500 ease-out-expo">
+                  →
+                </span>
+              </button>
+            }
+          />
         ) : filtered.length === 0 ? (
-          <div className="bg-card border border-border rounded-xl p-12 text-center">
-            <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <h3 className="font-heading text-xl text-foreground">Aucun client</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              {search || tab !== "all"
-                ? "Aucun résultat avec ces filtres."
-                : "Commence en ajoutant ton premier client."}
+          <div className="border hairline py-16 text-center space-y-3">
+            <div className="font-mono-kicker text-[10px] text-muted-foreground">
+              Aucun résultat
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {search ? `Aucun client ne correspond à « ${search} ».` : "Aucun client avec ce filtre."}
             </p>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {filtered.map((client) => (
               <ClientCard
                 key={client.id}
@@ -189,60 +276,61 @@ function ClientCard({
 }) {
   const verified = client.status === "verified";
   return (
-    <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-      <div className="flex items-start justify-between gap-2">
+    <article className="group border hairline p-5 space-y-4 transition-all duration-500 ease-out-expo hover:border-foreground/40">
+      <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="font-heading text-lg text-foreground tracking-wide truncate">
-            {client.firstName} {client.lastName}
+          <div className="font-mono-kicker text-[9px] text-muted-foreground mb-1.5">
+            {verified ? "Validé" : "À recontacter"}
           </div>
+          <h3 className="font-heading text-2xl text-foreground leading-none truncate">
+            {client.firstName} <span className="italic">{client.lastName}</span>
+          </h3>
           {client.village && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-              <MapPin className="w-3 h-3" /> {client.village}
+            <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <MapPin className="w-2.5 h-2.5" strokeWidth={1.5} /> {client.village}
             </div>
           )}
         </div>
         {verified ? (
-          <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-green-500/15 text-green-400 border border-green-500/30">
-            <ShieldCheck className="w-3 h-3" /> Vérifié
-          </span>
+          <ShieldCheck className="w-4 h-4 text-success flex-shrink-0" strokeWidth={1.5} />
         ) : (
-          <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
-            <Clock className="w-3 h-3" /> En attente
-          </span>
+          <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0" strokeWidth={1.5} />
         )}
-      </div>
+      </header>
 
-      <div className="space-y-1.5 text-xs text-muted-foreground">
+      <div className="space-y-1.5 text-[12px]">
         {client.email && (
-          <div className="flex items-center gap-2">
-            <Mail className="w-3.5 h-3.5" />
-            <a href={`mailto:${client.email}`} className="hover:text-foreground truncate">
-              {client.email}
-            </a>
-          </div>
+          <a
+            href={`mailto:${client.email}`}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Mail className="w-3 h-3" strokeWidth={1.5} />
+            <span className="truncate">{client.email}</span>
+          </a>
         )}
         {client.phone && (
-          <div className="flex items-center gap-2">
-            <PhoneIcon className="w-3.5 h-3.5" />
-            <a href={`tel:${client.phone}`} className="hover:text-foreground">
-              {client.phone}
-            </a>
-          </div>
+          <a
+            href={`tel:${client.phone}`}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <PhoneIcon className="w-3 h-3" strokeWidth={1.5} />
+            {client.phone}
+          </a>
         )}
         {client.notes && (
-          <div className="flex items-start gap-2 pt-1">
-            <StickyNote className="w-3.5 h-3.5 mt-0.5" />
-            <span className="line-clamp-2">{client.notes}</span>
+          <div className="flex items-start gap-2 pt-1 text-muted-foreground">
+            <StickyNote className="w-3 h-3 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
+            <span className="line-clamp-2 italic">{client.notes}</span>
           </div>
         )}
       </div>
 
-      <div className="flex gap-2 pt-2 border-t border-border">
+      <div className="flex gap-2 pt-3 border-t hairline">
         {verified ? (
           <button
             onClick={() => onToggle("pending")}
             disabled={pending}
-            className="flex-1 text-xs font-semibold py-2 px-3 rounded-md border border-border bg-secondary hover:bg-secondary/70 text-muted-foreground hover:text-foreground transition-all"
+            className="flex-1 text-[10px] font-mono-kicker py-2 border hairline hover:border-foreground/40 text-muted-foreground hover:text-foreground transition-all duration-500 ease-out-expo"
           >
             Repasser en attente
           </button>
@@ -250,20 +338,21 @@ function ClientCard({
           <button
             onClick={() => onToggle("verified")}
             disabled={pending}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-md bg-green-500/90 hover:bg-green-500 text-white transition-all"
+            className="group/btn flex-1 inline-flex items-center justify-center gap-1.5 text-[10px] font-mono-kicker py-2 bg-foreground text-background hover:bg-foreground/90 transition-all duration-500 ease-out-expo"
           >
-            <CheckCircle2 className="w-3.5 h-3.5" /> Marquer vérifié
+            <CheckCircle2 className="w-3 h-3" strokeWidth={1.5} />
+            Marquer vérifié
           </button>
         )}
         <button
           onClick={onDelete}
-          className="p-2 rounded-md border border-border text-destructive hover:bg-destructive/10"
+          className="px-3 py-2 border hairline hover:border-destructive/60 text-muted-foreground hover:text-destructive transition-all duration-500 ease-out-expo"
           aria-label="Supprimer"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-3 h-3" strokeWidth={1.5} />
         </button>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -307,109 +396,130 @@ function CreateClientDialog({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-card border border-border rounded-xl max-w-lg w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <h2 className="font-heading text-xl text-foreground tracking-wide">NOUVEAU CLIENT</h2>
-          <button onClick={onClose} className="p-1 rounded-md hover:bg-secondary text-muted-foreground">
-            <X className="w-4 h-4" />
-          </button>
+    <div
+      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-background border hairline max-w-lg w-full p-8 space-y-6 relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute right-5 top-5 text-muted-foreground hover:text-foreground"
+          aria-label="Fermer"
+        >
+          <X className="w-4 h-4" strokeWidth={1.5} />
+        </button>
+
+        <div>
+          <div className="font-mono-kicker text-[10px] text-muted-foreground">CRM</div>
+          <h2 className="font-heading text-3xl text-foreground italic mt-1">
+            Nouveau client<span className="text-primary not-italic">.</span>
+          </h2>
         </div>
 
-        <form onSubmit={submit} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder="Prénom *"
-              className="px-3 py-2 bg-secondary border border-border rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-            />
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder="Nom *"
-              className="px-3 py-2 bg-secondary border border-border rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+        <form onSubmit={submit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Prénom *" value={firstName} onChange={setFirstName} />
+            <Field label="Nom *" value={lastName} onChange={setLastName} />
+          </div>
+          <Field label="Email" value={email} onChange={setEmail} type="email" />
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Téléphone" value={phone} onChange={setPhone} type="tel" />
+            <Field label="Village / ville" value={village} onChange={setVillage} />
+          </div>
+          <div>
+            <label className="font-mono-kicker text-[9px] text-muted-foreground block mb-1.5">
+              Notes
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Suivi commercial, contexte…"
+              rows={3}
+              className="w-full px-0 py-2 bg-transparent border-0 border-b hairline focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground/40 text-sm resize-none transition-colors"
             />
           </div>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            className="w-full px-3 py-2 bg-secondary border border-border rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-          />
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Téléphone"
-              className="px-3 py-2 bg-secondary border border-border rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-            />
-            <input
-              type="text"
-              value={village}
-              onChange={(e) => setVillage(e.target.value)}
-              placeholder="Village / ville"
-              className="px-3 py-2 bg-secondary border border-border rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-            />
-          </div>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Notes (suivi commercial, contexte, etc.)"
-            rows={3}
-            className="w-full px-3 py-2 bg-secondary border border-border rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
-          />
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Statut</label>
-            <div className="grid grid-cols-2 gap-2">
+          <div>
+            <div className="font-mono-kicker text-[9px] text-muted-foreground block mb-2">
+              Statut initial
+            </div>
+            <div className="grid grid-cols-2 gap-0 border hairline">
               <button
                 type="button"
                 onClick={() => setStatus("pending")}
-                className={`py-2 px-3 rounded-md text-xs font-semibold border transition-all ${
+                className={`py-2.5 px-3 text-[10px] font-mono-kicker transition-all duration-300 ease-out-expo ${
                   status === "pending"
-                    ? "bg-amber-500/15 border-amber-500/40 text-amber-400"
-                    : "bg-secondary border-border text-muted-foreground"
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Clock className="w-3.5 h-3.5 inline mr-1" /> En attente
+                <Clock className="w-3 h-3 inline mr-1.5" strokeWidth={1.5} /> En attente
               </button>
               <button
                 type="button"
                 onClick={() => setStatus("verified")}
-                className={`py-2 px-3 rounded-md text-xs font-semibold border transition-all ${
+                className={`py-2.5 px-3 text-[10px] font-mono-kicker transition-all duration-300 ease-out-expo border-l hairline ${
                   status === "verified"
-                    ? "bg-green-500/15 border-green-500/40 text-green-400"
-                    : "bg-secondary border-border text-muted-foreground"
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <ShieldCheck className="w-3.5 h-3.5 inline mr-1" /> Vérifié
+                <ShieldCheck className="w-3 h-3 inline mr-1.5" strokeWidth={1.5} /> Vérifié
               </button>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-3 pt-4 border-t hairline">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-md border border-border text-sm text-muted-foreground hover:text-foreground"
+              className="px-4 py-2 text-[11px] font-mono-kicker text-muted-foreground hover:text-foreground"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={createMut.isPending}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-foreground text-background text-[11px] font-mono-kicker hover:bg-foreground/90 disabled:opacity-50 transition-all duration-500 ease-out-expo"
             >
-              {createMut.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enregistrer"}
+              {createMut.isPending ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                "Enregistrer ↵"
+              )}
             </button>
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  type = "text",
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+}) {
+  return (
+    <div>
+      <label className="font-mono-kicker text-[9px] text-muted-foreground block mb-1.5">
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-0 py-2 bg-transparent border-0 border-b hairline focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground/40 text-sm transition-colors"
+      />
     </div>
   );
 }
@@ -427,22 +537,39 @@ function ConfirmDeleteDialog({
   loading: boolean;
 }) {
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onCancel}>
-      <div className="bg-card border border-border rounded-xl max-w-sm w-full p-6 space-y-3" onClick={(e) => e.stopPropagation()}>
-        <h2 className="font-heading text-xl text-foreground tracking-wide">SUPPRIMER ?</h2>
-        <p className="text-sm text-muted-foreground">
-          {client.firstName} {client.lastName} sera définitivement supprimé du CRM. Cette action est irréversible.
+    <div
+      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-background border hairline max-w-sm w-full p-8 space-y-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div>
+          <div className="font-mono-kicker text-[10px] text-destructive">Suppression</div>
+          <h2 className="font-heading text-2xl text-foreground italic mt-1">
+            Supprimer ce client<span className="text-primary not-italic">.</span> ?
+          </h2>
+        </div>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          <strong className="text-foreground not-italic font-medium">
+            {client.firstName} {client.lastName}
+          </strong>{" "}
+          sera retiré du CRM définitivement. Les téléphones liés ne sont pas concernés.
         </p>
-        <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onCancel} className="px-4 py-2 rounded-md border border-border text-sm text-muted-foreground hover:text-foreground">
+        <div className="flex justify-end gap-3 pt-3 border-t hairline">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-[11px] font-mono-kicker text-muted-foreground hover:text-foreground"
+          >
             Annuler
           </button>
           <button
             onClick={onConfirm}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-destructive text-destructive-foreground text-sm font-semibold hover:bg-destructive/90 disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-destructive text-destructive-foreground text-[11px] font-mono-kicker hover:bg-destructive/90 disabled:opacity-50 transition-all duration-500 ease-out-expo"
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Supprimer"}
+            {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Confirmer ↵"}
           </button>
         </div>
       </div>
