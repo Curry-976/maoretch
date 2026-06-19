@@ -12,12 +12,13 @@ import {
   Receipt,
 } from "lucide-react";
 import { api } from "@/lib/api";
-import { Client, DocumentType, Phone, SalesDocument } from "@/lib/types";
+import { Client, DocumentType, Part, Phone, SalesDocument } from "@/lib/types";
 import { Layout } from "@/components/Layout";
 import { PageMotion } from "@/components/ui/page-motion";
 
 type Line = {
   phoneId: string;
+  partId: string;
   label: string;
   description: string;
   quantity: number;
@@ -33,7 +34,7 @@ function eur(n: number) {
 }
 
 function emptyLine(): Line {
-  return { phoneId: "", label: "", description: "", quantity: 1, unitPrice: 0 };
+  return { phoneId: "", partId: "", label: "", description: "", quantity: 1, unitPrice: 0 };
 }
 
 function lineFromPhone(p: Phone): Line {
@@ -43,12 +44,25 @@ function lineFromPhone(p: Phone): Line {
     .join(" · ");
   return {
     phoneId: p.id,
+    partId: "",
     label: specs ? `${bits} · ${specs}` : bits,
     description: `Vendeur : ${p.seller.firstName} ${p.seller.lastName} · ${p.seller.village}${
       p.battery ? ` · Batterie ${p.battery}` : ""
     }`,
     quantity: 1,
     unitPrice: p.resalePrice,
+  };
+}
+
+function lineFromPart(p: Part): Line {
+  const quality = p.quality ? ` (${p.quality})` : "";
+  return {
+    phoneId: "",
+    partId: p.id,
+    label: `${p.type} ${p.deviceBrand} ${p.deviceModel}${quality}`,
+    description: p.notes ?? "",
+    quantity: 1,
+    unitPrice: p.price,
   };
 }
 
@@ -104,6 +118,7 @@ export default function DocumentEditor() {
       existing.lines.length
         ? existing.lines.map((l) => ({
             phoneId: l.phoneId ?? "",
+            partId: l.partId ?? "",
             label: l.label,
             description: l.description ?? "",
             quantity: l.quantity,
@@ -138,6 +153,16 @@ export default function DocumentEditor() {
   const availablePhones = useMemo(
     () => phones.filter((p) => p.status === "for_sale"),
     [phones],
+  );
+
+  // Parts grid — picker fills line label + price for repairs
+  const { data: parts = [] } = useQuery({
+    queryKey: ["parts"],
+    queryFn: () => api.get<Part[]>("/api/parts"),
+  });
+  const partById = useMemo(
+    () => Object.fromEntries(parts.map((p) => [p.id, p])),
+    [parts],
   );
   const phoneById = useMemo(
     () => Object.fromEntries(phones.map((p) => [p.id, p])),
@@ -183,6 +208,7 @@ export default function DocumentEditor() {
           .filter((l) => l.label.trim())
           .map((l, i) => ({
             phoneId: l.phoneId || undefined,
+            partId: l.partId || undefined,
             label: l.label,
             description: l.description.trim() || undefined,
             quantity: Number(l.quantity) || 0,
@@ -398,6 +424,39 @@ export default function DocumentEditor() {
                               }).format(p.resalePrice)}
                             </option>
                           ))}
+                      </select>
+                    )}
+                    {parts.length > 0 && (
+                      <select
+                        value={line.partId}
+                        onChange={(e) => {
+                          const pid = e.target.value;
+                          if (!pid) {
+                            setLine(i, { partId: "" });
+                            return;
+                          }
+                          const p = partById[pid];
+                          if (!p) return;
+                          const filled = lineFromPart(p);
+                          setLine(i, {
+                            ...filled,
+                            description: line.description || filled.description,
+                          });
+                        }}
+                        className="w-full px-2.5 py-1.5 bg-card border hairline-border rounded-md text-[12px] text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+                      >
+                        <option value="">— Choisir un composant (grille tarifaire) —</option>
+                        {parts.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.type} {p.deviceBrand} {p.deviceModel}
+                            {p.quality ? ` (${p.quality})` : ""} ·{" "}
+                            {new Intl.NumberFormat("fr-FR", {
+                              style: "currency",
+                              currency: "EUR",
+                              maximumFractionDigits: 0,
+                            }).format(p.price)}
+                          </option>
+                        ))}
                       </select>
                     )}
                     <input

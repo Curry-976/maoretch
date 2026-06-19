@@ -75,6 +75,7 @@ export const DocumentStatus = z.enum([
 
 export const DocumentLineSchema = z.object({
   phoneId: z.string().optional().or(z.literal("")),
+  partId: z.string().optional().or(z.literal("")),
   label: z.string().min(1),
   description: z.string().optional().or(z.literal("")),
   quantity: z.number().positive().default(1),

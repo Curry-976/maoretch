@@ -51,6 +51,7 @@ export type DocumentStatus = "draft" | "sent" | "accepted" | "paid" | "cancelled
 export interface DocumentLine {
   id: string;
   phoneId: string | null;
+  partId: string | null;
   label: string;
   description: string | null;
   quantity: number;

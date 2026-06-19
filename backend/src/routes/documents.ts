@@ -89,6 +89,7 @@ documentsRouter.post("/", zValidator("json", CreateDocumentSchema), async (c) =>
   // Compute totals from lines
   const lines = body.lines.map((l, i) => ({
     phoneId: l.phoneId || null,
+    partId: l.partId || null,
     label: l.label,
     description: l.description || null,
     quantity: l.quantity,
@@ -182,6 +183,7 @@ documentsRouter.patch("/:id", zValidator("json", UpdateDocumentSchema), async (c
 
     const lines = (body.lines ?? existing.lines).map((l: any, i: number) => ({
       phoneId: ("phoneId" in l ? l.phoneId : null) || null,
+      partId: ("partId" in l ? l.partId : null) || null,
       label: l.label,
       description: ("description" in l ? l.description : null) || null,
       quantity: l.quantity,
