@@ -17,6 +17,7 @@ import {
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { DocumentStatus, SalesDocument } from "@/lib/types";
+import { COMPANY } from "@/lib/company";
 import { Layout } from "@/components/Layout";
 
 function eur(n: number) {
@@ -201,12 +202,14 @@ export default function DocumentView() {
           <header className="flex flex-wrap items-start justify-between gap-6">
             <div className="space-y-1">
               <div className="font-display text-2xl text-foreground tracking-tight">
-                Maore-Tech
+                {COMPANY.name}
               </div>
               <div className="text-[12px] text-muted-foreground leading-relaxed">
-                Mamoudzou, Mayotte (976)
+                {COMPANY.legalForm} · {COMPANY.address}
                 <br />
-                Reseller de téléphones — outil interne
+                {COMPANY.postalCode} {COMPANY.city}
+                <br />
+                SIRET {COMPANY.siret} · APE {COMPANY.apeCode}
               </div>
             </div>
             <div className="text-right space-y-1">
@@ -354,9 +357,19 @@ export default function DocumentView() {
             </section>
           )}
 
-          {/* Footer */}
-          <footer className="border-t hairline-border pt-5 text-center text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-            Maore-Tech · Mamoudzou, Mayotte 976
+          {/* Footer — mentions légales */}
+          <footer className="border-t hairline-border pt-5 space-y-1.5 text-center text-[10px] text-muted-foreground leading-relaxed">
+            <div className="font-medium text-muted-foreground">
+              {COMPANY.vatMention}
+            </div>
+            <div>
+              {COMPANY.name} · {COMPANY.legalForm} · {COMPANY.address},{" "}
+              {COMPANY.postalCode} {COMPANY.city}
+            </div>
+            <div className="tabular">
+              SIREN {COMPANY.siren} · SIRET {COMPANY.siret} · APE {COMPANY.apeCode}{" "}
+              · EORI {COMPANY.eori}
+            </div>
           </footer>
         </div>
       </article>

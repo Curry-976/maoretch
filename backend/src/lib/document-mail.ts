@@ -2,6 +2,19 @@ import type { Document, DocumentLine } from "@prisma/client";
 
 type FullDocument = Document & { lines: DocumentLine[] };
 
+const COMPANY = {
+  name: "MAORE TECH",
+  legalForm: "SARL",
+  address: "KAWENI 15 B RUE BAHONI",
+  postalCode: "97600",
+  city: "Mamoudzou",
+  siren: "885 265 835",
+  siret: "885 265 835 00037",
+  eori: "FR885 265 835 00037",
+  apeCode: "47.41Z",
+  vatMention: "TVA non applicable, art. 293 B du CGI",
+};
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -115,8 +128,8 @@ export function renderDocumentEmail(
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
             <tr>
               <td style="vertical-align:top">
-                <div style="font-size:20px;font-weight:700;color:#1a1f36;letter-spacing:-0.01em">Maore-Tech</div>
-                <div style="font-size:11px;color:#6b6f7b;margin-top:4px">Mamoudzou, Mayotte (976)</div>
+                <div style="font-size:20px;font-weight:700;color:#1a1f36;letter-spacing:-0.01em">${COMPANY.name}</div>
+                <div style="font-size:11px;color:#6b6f7b;margin-top:4px;line-height:1.5">${COMPANY.legalForm} · ${COMPANY.address}<br/>${COMPANY.postalCode} ${COMPANY.city}<br/>SIRET ${COMPANY.siret} · APE ${COMPANY.apeCode}</div>
               </td>
               <td style="vertical-align:top;text-align:right">
                 <div style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#6b6f7b;font-weight:500">${typeLabel}</div>
@@ -175,9 +188,11 @@ export function renderDocumentEmail(
         ${notesBlock}
         ${termsBlock}
 
-        <!-- Footer -->
-        <tr><td style="padding:20px 32px;border-top:1px solid #e5e2db;text-align:center;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#9aa0aa">
-          Maore-Tech · Mamoudzou, Mayotte 976
+        <!-- Footer — mentions légales -->
+        <tr><td style="padding:18px 32px;border-top:1px solid #e5e2db;text-align:center;font-size:10px;color:#9aa0aa;line-height:1.6">
+          <div style="font-weight:600;color:#6b6f7b">${COMPANY.vatMention}</div>
+          <div>${COMPANY.name} · ${COMPANY.legalForm} · ${COMPANY.address}, ${COMPANY.postalCode} ${COMPANY.city}</div>
+          <div>SIREN ${COMPANY.siren} · SIRET ${COMPANY.siret} · APE ${COMPANY.apeCode} · EORI ${COMPANY.eori}</div>
         </td></tr>
       </table>
 
