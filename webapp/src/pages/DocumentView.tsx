@@ -273,10 +273,23 @@ export default function DocumentView() {
                 </tr>
               </thead>
               <tbody className="divide-y hairline-border">
-                {doc.lines.map((l) => (
+                {doc.lines.map((l) => {
+                  const kind = l.phoneId
+                    ? "Téléphone"
+                    : l.partId
+                      ? "Pièce"
+                      : null;
+                  return (
                   <tr key={l.id} className="align-top">
                     <td className="py-3 pr-4">
-                      <div className="text-foreground font-medium">{l.label}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-foreground font-medium">{l.label}</span>
+                        {kind && (
+                          <span className="text-[8px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded border border-foreground/20 text-muted-foreground">
+                            {kind}
+                          </span>
+                        )}
+                      </div>
                       {l.description && (
                         <div className="text-muted-foreground text-[12px] mt-0.5">
                           {l.description}
@@ -289,7 +302,8 @@ export default function DocumentView() {
                       {eur(l.total)}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </section>
