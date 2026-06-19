@@ -1,5 +1,7 @@
 # MaoreTech — single-image deploy (Hono backend serves the Vite webapp).
-FROM oven/bun:1.1-alpine AS base
+# Debian (glibc) base: Prisma's query engine panics under Alpine/musl,
+# so we stay on the standard oven/bun image.
+FROM oven/bun:1.1 AS base
 WORKDIR /app
 
 # ---------- Install all deps ----------
@@ -19,11 +21,12 @@ RUN rm -rf backend/public && mv webapp/dist backend/public
 RUN cd backend && bun run prisma:generate
 
 # ---------- Runtime ----------
-FROM oven/bun:1.1-alpine AS runner
+FROM oven/bun:1.1 AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-# Required for Prisma engines on alpine
-RUN apk add --no-cache openssl libc6-compat
+# OpenSSL is needed by the Prisma engines.
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/backend ./backend
 COPY package.json ./
