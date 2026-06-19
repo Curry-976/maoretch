@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Client, DashboardStats, Phone } from "@/lib/types";
+import { useSession } from "@/lib/auth-client";
 import { Layout } from "@/components/Layout";
 import { CountUp } from "@/components/ui/count-up";
 import { PageMotion, MotionItem } from "@/components/ui/page-motion";
@@ -58,6 +59,15 @@ const tooltipStyle: React.CSSProperties = {
 };
 
 export default function Dashboard() {
+  const { data: session } = useSession();
+  // Derive a first name: prefer the account name, fall back to the email
+  // local part. "Administrateur" is treated as no name.
+  const rawName = session?.user?.name?.trim();
+  const firstName =
+    rawName && rawName.toLowerCase() !== "administrateur"
+      ? rawName.split(" ")[0]
+      : session?.user?.email?.split("@")[0] || "";
+
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: () => api.get<DashboardStats>("/api/dashboard/stats"),
@@ -128,7 +138,7 @@ export default function Dashboard() {
                 En direct
               </span>
               <span className="text-muted-foreground/40">·</span>
-              <span>{greeting}, Fahel</span>
+              <span>{firstName ? `${greeting}, ${firstName}` : greeting}</span>
             </div>
             <h1 className="font-display text-[clamp(3rem,5.5vw,4.4rem)] leading-[0.96] text-foreground tracking-tightest">
               <span className="capitalize">{dayName}</span>{" "}
