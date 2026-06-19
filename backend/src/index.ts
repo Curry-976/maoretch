@@ -11,6 +11,7 @@ import { dashboardRouter } from "./routes/dashboard";
 import { clientsRouter } from "./routes/clients";
 import { activityRouter } from "./routes/activity";
 import { documentsRouter } from "./routes/documents";
+import { partsRouter } from "./routes/parts";
 import { bootstrapAdmin } from "./bootstrap";
 
 const app = new Hono<{
@@ -63,6 +64,7 @@ app.route("/api/dashboard", dashboardRouter);
 app.route("/api/clients", clientsRouter);
 app.route("/api/activity", activityRouter);
 app.route("/api/documents", documentsRouter);
+app.route("/api/parts", partsRouter);
 
 // Static webapp (Vite output is copied into ./public by the build step).
 // SPA fallback: anything not matched above serves index.html.

@@ -85,6 +85,18 @@ export interface SalesDocument {
   updatedAt: string;
 }
 
+export interface Part {
+  id: string;
+  deviceBrand: string;
+  deviceModel: string;
+  type: string;
+  quality: string | null;
+  price: number;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface DashboardStats {
   totalPhones: number;
   soldCount: number;

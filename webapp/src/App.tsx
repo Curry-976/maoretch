@@ -18,6 +18,7 @@ import Users from "@/pages/Users";
 import Documents from "@/pages/Documents";
 import DocumentEditor from "@/pages/DocumentEditor";
 import DocumentView from "@/pages/DocumentView";
+import Parts from "@/pages/Parts";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -60,6 +61,7 @@ function AnimatedRoutes() {
           <Route path="/documents/new" element={<ProtectedRoute><DocumentEditor /></ProtectedRoute>} />
           <Route path="/documents/:id" element={<ProtectedRoute><DocumentView /></ProtectedRoute>} />
           <Route path="/documents/:id/edit" element={<ProtectedRoute><DocumentEditor /></ProtectedRoute>} />
+          <Route path="/parts" element={<ProtectedRoute><Parts /></ProtectedRoute>} />
           {/* Old OTP route — redirect to login for users who still have the URL bookmarked */}
           <Route path="/verify-otp" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<NotFound />} />

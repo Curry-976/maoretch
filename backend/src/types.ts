@@ -105,3 +105,18 @@ export const UpdateDocumentSchema = CreateDocumentSchema.partial().extend({
 
 export type CreateDocument = z.infer<typeof CreateDocumentSchema>;
 export type UpdateDocument = z.infer<typeof UpdateDocumentSchema>;
+
+// ---------- Parts (grille tarifaire) ----------
+export const CreatePartSchema = z.object({
+  deviceBrand: z.string().min(1),
+  deviceModel: z.string().min(1),
+  type: z.string().min(1),
+  quality: z.string().optional().or(z.literal("")),
+  price: z.number().min(0),
+  notes: z.string().optional().or(z.literal("")),
+});
+
+export const UpdatePartSchema = CreatePartSchema.partial();
+
+export type CreatePart = z.infer<typeof CreatePartSchema>;
+export type UpdatePart = z.infer<typeof UpdatePartSchema>;

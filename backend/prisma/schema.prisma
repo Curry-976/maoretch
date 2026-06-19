@@ -174,3 +174,19 @@ model Phone {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
+
+// Grille tarifaire — prix des composants à remplacer (réparation).
+model Part {
+  id          String   @id @default(cuid())
+  deviceBrand String   // marque compatible : Apple, Samsung…
+  deviceModel String   // modèle compatible : iPhone 13, Galaxy A52…
+  type        String   // écran, batterie, vitre arrière, connecteur de charge…
+  quality     String?  // pour les écrans : "Original" | "GX" | "Compatible"
+  price       Float    @default(0) // prix de vente TTC
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([deviceBrand])
+  @@index([type])
+}
