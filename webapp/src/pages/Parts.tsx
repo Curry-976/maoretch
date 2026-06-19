@@ -9,9 +9,12 @@ import {
   Loader2,
   X,
   ChevronRight,
+  Download,
 } from "lucide-react";
+import * as XLSX from "xlsx";
 import { api } from "@/lib/api";
 import { Part } from "@/lib/types";
+import { COMPANY } from "@/lib/company";
 import { Layout } from "@/components/Layout";
 import { PageMotion } from "@/components/ui/page-motion";
 import { CountUp } from "@/components/ui/count-up";
@@ -44,6 +47,74 @@ function eur(n: number) {
     currency: "EUR",
     maximumFractionDigits: 0,
   }).format(n);
+}
+
+// Excel sheet names can't exceed 31 chars or contain : \ / ? * [ ]
+function sheetName(name: string): string {
+  return name.replace(/[:\\/?*[\]]/g, "-").slice(0, 31);
+}
+
+function exportToExcel(parts: Part[]) {
+  const wb = XLSX.utils.book_new();
+
+  // ---- Summary sheet: everything, sortable/filterable ----
+  const sorted = [...parts].sort(
+    (a, b) =>
+      a.type.localeCompare(b.type) ||
+      a.deviceBrand.localeCompare(b.deviceBrand) ||
+      a.deviceModel.localeCompare(b.deviceModel),
+  );
+  const summaryRows = [
+    [`${COMPANY.name} — Grille tarifaire`],
+    [`Exporté le ${new Date().toLocaleDateString("fr-FR")}`],
+    [],
+    ["Catégorie", "Marque", "Modèle", "Qualité", "Prix (€)", "Notes"],
+    ...sorted.map((p) => [
+      p.type,
+      p.deviceBrand,
+      p.deviceModel,
+      p.quality ?? "",
+      p.price,
+      p.notes ?? "",
+    ]),
+  ];
+  const summary = XLSX.utils.aoa_to_sheet(summaryRows);
+  summary["!cols"] = [
+    { wch: 22 },
+    { wch: 14 },
+    { wch: 20 },
+    { wch: 12 },
+    { wch: 10 },
+    { wch: 30 },
+  ];
+  XLSX.utils.book_append_sheet(wb, summary, "Toute la grille");
+
+  // ---- One sheet per category ----
+  const byCategory = new Map<string, Part[]>();
+  for (const p of sorted) {
+    if (!byCategory.has(p.type)) byCategory.set(p.type, []);
+    byCategory.get(p.type)!.push(p);
+  }
+  for (const [category, items] of byCategory) {
+    const rows = [
+      [category.toUpperCase()],
+      [],
+      ["Marque", "Modèle", "Qualité", "Prix (€)", "Notes"],
+      ...items.map((p) => [
+        p.deviceBrand,
+        p.deviceModel,
+        p.quality ?? "",
+        p.price,
+        p.notes ?? "",
+      ]),
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws["!cols"] = [{ wch: 14 }, { wch: 20 }, { wch: 12 }, { wch: 10 }, { wch: 30 }];
+    XLSX.utils.book_append_sheet(wb, ws, sheetName(category));
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `grille-tarifaire-maore-tech-${today}.xlsx`);
 }
 
 export default function Parts() {
@@ -113,13 +184,24 @@ export default function Parts() {
               GX…).
             </p>
           </div>
-          <button
-            onClick={() => setCreating(true)}
-            className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-ink/90 self-start"
-          >
-            <Plus className="w-3.5 h-3.5" strokeWidth={2} />
-            Ajouter un composant
-          </button>
+          <div className="flex gap-2 self-start">
+            {parts.length > 0 && (
+              <button
+                onClick={() => exportToExcel(parts)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 border hairline-border rounded-md text-[13px] font-medium text-foreground hover:border-foreground/40 transition-all"
+              >
+                <Download className="w-3.5 h-3.5" strokeWidth={2} />
+                Exporter Excel
+              </button>
+            )}
+            <button
+              onClick={() => setCreating(true)}
+              className="btn-magnetic inline-flex items-center gap-2 px-4 py-2.5 ink-surface rounded-md text-[13px] font-medium hover:bg-ink/90"
+            >
+              <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+              Ajouter un composant
+            </button>
+          </div>
         </header>
 
         {/* Search */}
