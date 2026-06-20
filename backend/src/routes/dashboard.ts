@@ -15,6 +15,7 @@ dashboardRouter.get("/stats", async (c) => {
   const totalPhones = phones.length;
   const soldPhones = phones.filter((p) => p.status === "sold");
   const forSalePhones = phones.filter((p) => p.status === "for_sale");
+  const repairPhones = phones.filter((p) => p.status === "en_réparation");
 
   const totalRevenue = soldPhones.reduce((sum, p) => sum + p.resalePrice, 0);
   const totalCost = soldPhones.reduce((sum, p) => sum + p.purchasePrice + p.repairPrice, 0);
@@ -46,6 +47,7 @@ dashboardRouter.get("/stats", async (c) => {
       totalPhones,
       soldCount: soldPhones.length,
       forSaleCount: forSalePhones.length,
+      repairCount: repairPhones.length,
       totalRevenue,
       totalProfit,
       totalInventoryValue,

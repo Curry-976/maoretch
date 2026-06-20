@@ -40,7 +40,7 @@ export const UpdatePhoneSchema = z.object({
   purchasePrice: z.number().positive().optional(),
   repairPrice: z.number().min(0).optional(),
   resalePrice: z.number().positive().optional(),
-  status: z.enum(["for_sale", "sold"]).optional(),
+  status: z.enum(["for_sale", "sold", "en_réparation"]).optional(),
 });
 
 // ---------- Clients (CRM) ----------

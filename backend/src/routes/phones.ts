@@ -63,8 +63,12 @@ phonesRouter.get("/:id", async (c) => {
 // Create a phone
 phonesRouter.post("/", zValidator("json", CreatePhoneSchema), async (c) => {
   const body = c.req.valid("json");
+  const data = nullifyOptionals(body) as Record<string, any>;
+  if (data.condition === "À réparer") {
+    data.status = "en_réparation";
+  }
   const phone = await prisma.phone.create({
-    data: nullifyOptionals(body),
+    data,
     include: { seller: true },
   });
   return c.json({ data: parsePhone(phone) }, 201);

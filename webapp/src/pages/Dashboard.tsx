@@ -21,6 +21,7 @@ import {
   TrendingUp,
   Kanban,
   ArrowRight,
+  Wrench,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Client, DashboardStats, Phone } from "@/lib/types";
@@ -272,6 +273,7 @@ export default function Dashboard() {
 
               <div className="space-y-3 pt-2 border-t border-sidebar-border">
                 <Row label="Téléphones en vente" value={String(stats?.forSaleCount ?? 0)} />
+                <Row label="En réparation" value={String(stats?.repairCount ?? 0)} />
                 <Row label="Vendus à ce jour" value={String(stats?.soldCount ?? 0)} />
                 <Row label="Total enregistré" value={String(stats?.totalPhones ?? 0)} />
               </div>
@@ -290,6 +292,14 @@ export default function Dashboard() {
             href="/phones"
           />
           <Tile
+            icon={<Wrench className="w-3.5 h-3.5" />}
+            label="En réparation"
+            value={String(stats?.repairCount ?? 0)}
+            numericValue={stats?.repairCount ?? 0}
+            sub="À remettre en vente"
+            href="/phones"
+          />
+          <Tile
             icon={<CheckCircle2 className="w-3.5 h-3.5" />}
             label="Vendus"
             value={String(stats?.soldCount ?? 0)}
@@ -304,15 +314,6 @@ export default function Dashboard() {
             numericValue={clients.length}
             sub={`${verifiedClients} vérifié${verifiedClients > 1 ? "s" : ""}`}
             href="/clients"
-          />
-          <Tile
-            icon={<Kanban className="w-3.5 h-3.5" />}
-            label="Pipeline actif"
-            value={String(stats?.forSaleCount ?? 0)}
-            numericValue={stats?.forSaleCount ?? 0}
-            sub="Téléphones en mouvement"
-            href="/pipeline"
-            badge="Nouveau"
           />
         </section>
 
@@ -472,10 +473,12 @@ export default function Dashboard() {
                               className={`text-[10px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded ${
                                 p.status === "sold"
                                   ? "bg-success/10 text-success"
+                                  : p.status === "en_réparation"
+                                  ? "bg-orange-500/10 text-orange-500"
                                   : "bg-foreground/8 text-primary"
                               }`}
                             >
-                              {p.status === "sold" ? "Vendu" : "En vente"}
+                              {p.status === "sold" ? "Vendu" : p.status === "en_réparation" ? "En réparation" : "En vente"}
                             </span>
                           </div>
                           <div className="text-[12px] text-muted-foreground mt-0.5">

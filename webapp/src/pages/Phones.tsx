@@ -53,13 +53,14 @@ function eur(n: number) {
 const FILTERS = [
   { key: "all" as const, label: "Tous" },
   { key: "for_sale" as const, label: "En vente" },
+  { key: "en_réparation" as const, label: "En réparation" },
   { key: "sold" as const, label: "Vendus" },
 ];
 
 export default function Phones() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "for_sale" | "sold">("all");
+  const [filter, setFilter] = useState<"all" | "for_sale" | "sold" | "en_réparation">("all");
   const [view, setView] = useState<"list" | "grouped">("grouped");
 
   const { data: phones = [], isLoading } = useQuery({
@@ -104,6 +105,7 @@ export default function Phones() {
   const stats = {
     total: phones.length,
     forSale: phones.filter((p) => p.status === "for_sale").length,
+    repair: phones.filter((p) => p.status === "en_réparation").length,
     sold: phones.filter((p) => p.status === "sold").length,
     revenue: phones
       .filter((p) => p.status === "sold")
@@ -123,6 +125,8 @@ export default function Phones() {
               <Datum value={stats.total} label="appareils" />
               <Sep />
               <Datum value={stats.forSale} label="en vente" />
+              <Sep />
+              <Datum value={stats.repair} label="en réparation" />
               <Sep />
               <Datum value={stats.sold} label="vendus" />
               <Sep />
@@ -417,6 +421,7 @@ function PhoneCard({
   const [open, setOpen] = useState(false);
   const margin = phone.resalePrice - phone.purchasePrice - phone.repairPrice;
   const isSold = phone.status === "sold";
+  const isRepair = phone.status === "en_réparation";
 
   return (
     <article className="card-soft rounded-lg overflow-hidden transition-all duration-500 ease-out-expo hover:-translate-y-px">
@@ -444,10 +449,12 @@ function PhoneCard({
               className={`text-[9px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded ${
                 isSold
                   ? "bg-success/10 text-success"
+                  : isRepair
+                  ? "bg-orange-500/10 text-orange-500"
                   : "bg-foreground/8 text-primary"
               }`}
             >
-              {isSold ? "Vendu" : "En vente"}
+              {isSold ? "Vendu" : isRepair ? "En réparation" : "En vente"}
             </span>
           </div>
           <div className="text-[12px] text-muted-foreground mt-1 truncate">
@@ -554,11 +561,12 @@ function GhostPhoneRow({
     purchase: number;
     repair: number;
     resale: number;
-    status: "for_sale" | "sold";
+    status: "for_sale" | "sold" | "en_réparation";
   };
 }) {
   const margin = phone.resale - phone.purchase - phone.repair;
   const isSold = phone.status === "sold";
+  const isRepair = phone.status === "en_réparation";
   return (
     <article className="card-soft rounded-lg p-4 flex items-center gap-4">
       <div className="w-14 h-14 rounded-md bg-secondary border hairline-border flex items-center justify-center text-muted-foreground/40">
@@ -571,10 +579,10 @@ function GhostPhoneRow({
           </h3>
           <span
             className={`text-[9px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded ${
-              isSold ? "bg-success/10 text-success" : "bg-foreground/8 text-foreground"
+              isSold ? "bg-success/10 text-success" : isRepair ? "bg-orange-500/10 text-orange-500" : "bg-foreground/8 text-foreground"
             }`}
           >
-            {isSold ? "Vendu" : "En vente"}
+            {isSold ? "Vendu" : isRepair ? "En réparation" : "En vente"}
           </span>
         </div>
         <div className="text-[12px] text-muted-foreground mt-1 truncate">
