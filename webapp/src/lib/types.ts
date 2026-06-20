@@ -18,6 +18,7 @@ export interface Phone {
   battery: string | null;
   imei: string | null;
   condition: string;
+  damagedComponents: string[] | null;
   photoUrl: string | null;
   purchasePrice: number;
   repairPrice: number;

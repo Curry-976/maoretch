@@ -165,7 +165,8 @@ model Phone {
   storage       String?
   battery       String?
   imei          String?
-  condition     String
+  condition          String
+  damagedComponents  String?
   photoUrl      String?
   purchasePrice Float
   repairPrice   Float    @default(0)

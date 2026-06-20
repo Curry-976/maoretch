@@ -54,6 +54,21 @@ function Stepper({ steps }: { steps: { num: string; label: string; done: boolean
   );
 }
 
+const DAMAGED_COMPONENTS = [
+  "Écran",
+  "Batterie",
+  "Caméra arrière",
+  "Caméra avant",
+  "Haut-parleur",
+  "Microphone",
+  "Connecteur de charge",
+  "Bouton power",
+  "Bouton volume",
+  "Vitre arrière",
+  "Face ID / Lecteur empreinte",
+  "Carte SIM",
+];
+
 const CONDITIONS = [
   { value: "Neuf", label: "Neuf" },
   { value: "Très bon état", label: "Très bon" },
@@ -94,6 +109,7 @@ export default function AddPhone() {
   const [battery, setBattery] = useState("");
   const [imei, setImei] = useState("");
   const [condition, setCondition] = useState("");
+  const [damagedComponents, setDamagedComponents] = useState<string[]>([]);
   const [photoUrl, setPhotoUrl] = useState<string>("");
   const [purchasePrice, setPurchasePrice] = useState("");
   const [repairPrice, setRepairPrice] = useState("0");
@@ -125,6 +141,7 @@ export default function AddPhone() {
         battery: battery.trim() || undefined,
         imei: imei.trim() || undefined,
         condition,
+        damagedComponents: damagedComponents.length > 0 ? damagedComponents : undefined,
         photoUrl: photoUrl || undefined,
         purchasePrice: parseFloat(purchasePrice),
         repairPrice: parseFloat(repairPrice) || 0,
@@ -450,7 +467,10 @@ export default function AddPhone() {
                       <button
                         key={c.value}
                         type="button"
-                        onClick={() => setCondition(c.value)}
+                        onClick={() => {
+                          setCondition(c.value);
+                          if (c.value !== "À réparer") setDamagedComponents([]);
+                        }}
                         className={`py-2.5 px-2 rounded-md text-[12px] font-medium border transition-all duration-300 ease-out-expo ${
                           condition === c.value
                             ? "bg-foreground text-background border-foreground"
@@ -462,6 +482,46 @@ export default function AddPhone() {
                     ))}
                   </div>
                 </div>
+
+                {condition === "À réparer" && (
+                  <div className="pt-4 mt-1 border-t hairline-border">
+                    <Label>Composants endommagés</Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
+                      {DAMAGED_COMPONENTS.map((comp) => {
+                        const checked = damagedComponents.includes(comp);
+                        return (
+                          <label
+                            key={comp}
+                            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-md border cursor-pointer transition-all text-[12px] font-medium select-none ${
+                              checked
+                                ? "bg-destructive/8 border-destructive/40 text-destructive"
+                                : "bg-card border-hairline text-muted-foreground hover:text-foreground hover:border-foreground/30"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() =>
+                                setDamagedComponents((prev) =>
+                                  checked
+                                    ? prev.filter((x) => x !== comp)
+                                    : [...prev, comp]
+                                )
+                              }
+                              className="w-3.5 h-3.5 accent-destructive"
+                            />
+                            {comp}
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {damagedComponents.length > 0 && (
+                      <p className="mt-2 text-[11px] text-destructive/70">
+                        {damagedComponents.length} composant{damagedComponents.length > 1 ? "s" : ""} endommagé{damagedComponents.length > 1 ? "s" : ""}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>

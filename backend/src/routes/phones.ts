@@ -11,6 +11,31 @@ type Variables = {
 
 export const phonesRouter = new Hono<{ Variables: Variables }>();
 
+const OPTIONAL_STRINGS = ["brand", "storage", "battery", "imei"] as const;
+
+function nullifyOptionals(body: Record<string, any>) {
+  const out: Record<string, any> = { ...body };
+  for (const key of OPTIONAL_STRINGS) {
+    if (key in out) out[key] = (out[key] as string | undefined)?.trim() || null;
+  }
+  if ("damagedComponents" in out) {
+    out.damagedComponents =
+      Array.isArray(out.damagedComponents) && out.damagedComponents.length > 0
+        ? JSON.stringify(out.damagedComponents)
+        : null;
+  }
+  return out;
+}
+
+function parsePhone(phone: any) {
+  return {
+    ...phone,
+    damagedComponents: phone.damagedComponents
+      ? JSON.parse(phone.damagedComponents)
+      : null,
+  };
+}
+
 // List all phones (optional ?status=for_sale|sold)
 phonesRouter.get("/", async (c) => {
   const status = c.req.query("status");
@@ -21,7 +46,7 @@ phonesRouter.get("/", async (c) => {
     include: { seller: true },
     orderBy: { createdAt: "desc" },
   });
-  return c.json({ data: phones });
+  return c.json({ data: phones.map(parsePhone) });
 });
 
 // Get a single phone
@@ -32,18 +57,8 @@ phonesRouter.get("/:id", async (c) => {
     include: { seller: true },
   });
   if (!phone) return c.json({ error: { message: "Phone not found" } }, 404);
-  return c.json({ data: phone });
+  return c.json({ data: parsePhone(phone) });
 });
-
-const OPTIONAL_STRINGS = ["brand", "storage", "battery", "imei"] as const;
-
-function nullifyOptionals(body: Record<string, any>) {
-  const out: Record<string, any> = { ...body };
-  for (const key of OPTIONAL_STRINGS) {
-    if (key in out) out[key] = (out[key] as string | undefined)?.trim() || null;
-  }
-  return out;
-}
 
 // Create a phone
 phonesRouter.post("/", zValidator("json", CreatePhoneSchema), async (c) => {
@@ -52,7 +67,7 @@ phonesRouter.post("/", zValidator("json", CreatePhoneSchema), async (c) => {
     data: nullifyOptionals(body),
     include: { seller: true },
   });
-  return c.json({ data: phone }, 201);
+  return c.json({ data: parsePhone(phone) }, 201);
 });
 
 // Update a phone
@@ -64,7 +79,7 @@ phonesRouter.patch("/:id", zValidator("json", UpdatePhoneSchema), async (c) => {
     data: nullifyOptionals(body),
     include: { seller: true },
   });
-  return c.json({ data: phone });
+  return c.json({ data: parsePhone(phone) });
 });
 
 // Delete a phone
