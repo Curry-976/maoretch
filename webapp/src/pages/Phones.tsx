@@ -133,8 +133,6 @@ export default function Phones() {
               <Sep />
               <Datum value={stats.repair} label="en réparation" />
               <Sep />
-              <Datum value={stats.hs} label="HS" />
-              <Sep />
               <Datum value={stats.forSale} label="en vente" />
               <Sep />
               <Datum value={stats.sold} label="vendus" />
@@ -144,6 +142,8 @@ export default function Phones() {
                 label="générés"
                 wide
               />
+              <Sep />
+              <Datum value={stats.hs} label="HS" />
             </div>
           </div>
           <Link
