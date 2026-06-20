@@ -124,9 +124,9 @@ export default function Phones() {
             <div className="flex items-baseline gap-x-6 gap-y-3 flex-wrap">
               <Datum value={stats.total} label="appareils" />
               <Sep />
-              <Datum value={stats.forSale} label="en vente" />
-              <Sep />
               <Datum value={stats.repair} label="en réparation" />
+              <Sep />
+              <Datum value={stats.forSale} label="en vente" />
               <Sep />
               <Datum value={stats.sold} label="vendus" />
               <Sep />
