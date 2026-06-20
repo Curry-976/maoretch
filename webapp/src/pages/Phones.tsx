@@ -15,6 +15,7 @@ import {
   List as ListIcon,
   Layers,
   FileText,
+  X,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Phone } from "@/lib/types";
@@ -53,6 +54,7 @@ function eur(n: number) {
 const FILTERS = [
   { key: "all" as const, label: "Tous" },
   { key: "en_réparation" as const, label: "En réparation" },
+  { key: "hs" as const, label: "HS" },
   { key: "for_sale" as const, label: "En vente" },
   { key: "sold" as const, label: "Vendus" },
 ];
@@ -60,7 +62,7 @@ const FILTERS = [
 export default function Phones() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "for_sale" | "sold" | "en_réparation">("all");
+  const [filter, setFilter] = useState<"all" | "for_sale" | "sold" | "en_réparation" | "hs">("all");
   const [view, setView] = useState<"list" | "grouped">("grouped");
 
   const { data: phones = [], isLoading } = useQuery({
@@ -69,10 +71,14 @@ export default function Phones() {
   });
 
   const toggleStatusMutation = useMutation({
-    mutationFn: ({ id, currentStatus }: { id: string; currentStatus: string }) =>
-      api.patch<Phone>(`/api/phones/${id}`, {
-        status: currentStatus === "sold" ? "for_sale" : "sold",
-      }),
+    mutationFn: ({ id, currentStatus }: { id: string; currentStatus: string }) => {
+      let nextStatus: string;
+      if (currentStatus === "mark_hs") nextStatus = "hs";
+      else if (currentStatus === "sold") nextStatus = "for_sale";
+      else if (currentStatus === "hs") nextStatus = "en_réparation";
+      else nextStatus = "sold";
+      return api.patch<Phone>(`/api/phones/${id}`, { status: nextStatus });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["phones"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
@@ -106,6 +112,7 @@ export default function Phones() {
     total: phones.length,
     forSale: phones.filter((p) => p.status === "for_sale").length,
     repair: phones.filter((p) => p.status === "en_réparation").length,
+    hs: phones.filter((p) => p.status === "hs").length,
     sold: phones.filter((p) => p.status === "sold").length,
     revenue: phones
       .filter((p) => p.status === "sold")
@@ -125,6 +132,8 @@ export default function Phones() {
               <Datum value={stats.total} label="appareils" />
               <Sep />
               <Datum value={stats.repair} label="en réparation" />
+              <Sep />
+              <Datum value={stats.hs} label="HS" />
               <Sep />
               <Datum value={stats.forSale} label="en vente" />
               <Sep />
@@ -422,6 +431,7 @@ function PhoneCard({
   const margin = phone.resalePrice - phone.purchasePrice - phone.repairPrice;
   const isSold = phone.status === "sold";
   const isRepair = phone.status === "en_réparation";
+  const isHs = phone.status === "hs";
 
   return (
     <article className="card-soft rounded-lg overflow-hidden transition-all duration-500 ease-out-expo hover:-translate-y-px">
@@ -451,10 +461,12 @@ function PhoneCard({
                   ? "bg-success/10 text-success"
                   : isRepair
                   ? "bg-orange-500/10 text-orange-500"
+                  : isHs
+                  ? "bg-destructive/10 text-destructive"
                   : "bg-foreground/8 text-primary"
               }`}
             >
-              {isSold ? "Vendu" : isRepair ? "En réparation" : "En vente"}
+              {isSold ? "Vendu" : isRepair ? "En réparation" : isHs ? "HS" : "En vente"}
             </span>
           </div>
           <div className="text-[12px] text-muted-foreground mt-1 truncate">
@@ -502,7 +514,7 @@ function PhoneCard({
             <DetailCell label="Réparation" value={eur(phone.repairPrice)} />
             <DetailCell label="Revente" value={eur(phone.resalePrice)} />
           </div>
-          <div className="flex items-center gap-3 p-4 border-t hairline-border">
+          <div className="flex items-center gap-3 p-4 border-t hairline-border flex-wrap">
             <button
               onClick={() => onToggleStatus(phone.id, phone.status)}
               className="btn-magnetic flex items-center gap-2 px-4 py-2 ink-surface rounded-md text-[12px] font-medium hover:bg-ink/90"
@@ -512,8 +524,17 @@ function PhoneCard({
               ) : (
                 <CheckCircle className="w-3.5 h-3.5" strokeWidth={2} />
               )}
-              {isSold ? "Remettre en vente" : "Marquer vendu"}
+              {isSold ? "Remettre en vente" : isRepair ? "Marquer vendu" : isHs ? "Remettre en réparation" : "Marquer vendu"}
             </button>
+            {isRepair && (
+              <button
+                onClick={() => onToggleStatus(phone.id, "mark_hs")}
+                className="flex items-center gap-1.5 px-3 py-2 border border-destructive/30 rounded-md text-[12px] font-medium text-destructive hover:bg-destructive/10 transition-all"
+              >
+                <X className="w-3 h-3" strokeWidth={2} />
+                Marquer HS
+              </button>
+            )}
             <Link
               to={`/documents/new?type=quote&phoneId=${phone.id}`}
               className="flex items-center gap-1.5 px-3 py-2 border hairline-border rounded-md text-[12px] font-medium text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-all"
@@ -561,12 +582,13 @@ function GhostPhoneRow({
     purchase: number;
     repair: number;
     resale: number;
-    status: "for_sale" | "sold" | "en_réparation";
+    status: "for_sale" | "sold" | "en_réparation" | "hs";
   };
 }) {
   const margin = phone.resale - phone.purchase - phone.repair;
   const isSold = phone.status === "sold";
   const isRepair = phone.status === "en_réparation";
+  const isHs = phone.status === "hs";
   return (
     <article className="card-soft rounded-lg p-4 flex items-center gap-4">
       <div className="w-14 h-14 rounded-md bg-secondary border hairline-border flex items-center justify-center text-muted-foreground/40">
@@ -579,10 +601,10 @@ function GhostPhoneRow({
           </h3>
           <span
             className={`text-[9px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded ${
-              isSold ? "bg-success/10 text-success" : isRepair ? "bg-orange-500/10 text-orange-500" : "bg-foreground/8 text-foreground"
+              isSold ? "bg-success/10 text-success" : isRepair ? "bg-orange-500/10 text-orange-500" : isHs ? "bg-destructive/10 text-destructive" : "bg-foreground/8 text-foreground"
             }`}
           >
-            {isSold ? "Vendu" : isRepair ? "En réparation" : "En vente"}
+            {isSold ? "Vendu" : isRepair ? "En réparation" : isHs ? "HS" : "En vente"}
           </span>
         </div>
         <div className="text-[12px] text-muted-foreground mt-1 truncate">

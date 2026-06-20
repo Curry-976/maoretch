@@ -23,7 +23,7 @@ export interface Phone {
   purchasePrice: number;
   repairPrice: number;
   resalePrice: number;
-  status: "for_sale" | "sold" | "en_réparation";
+  status: "for_sale" | "sold" | "en_réparation" | "hs";
   sellerId: string;
   seller: Seller;
   createdAt: string;
@@ -104,6 +104,7 @@ export interface DashboardStats {
   soldCount: number;
   forSaleCount: number;
   repairCount: number;
+  hsCount: number;
   totalRevenue: number;
   totalProfit: number;
   totalInventoryValue: number;

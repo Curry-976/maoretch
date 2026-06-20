@@ -274,6 +274,7 @@ export default function Dashboard() {
               <div className="space-y-3 pt-2 border-t border-sidebar-border">
                 <Row label="Téléphones en vente" value={String(stats?.forSaleCount ?? 0)} />
                 <Row label="En réparation" value={String(stats?.repairCount ?? 0)} />
+                <Row label="Hors service (HS)" value={String(stats?.hsCount ?? 0)} />
                 <Row label="Vendus à ce jour" value={String(stats?.soldCount ?? 0)} />
                 <Row label="Total enregistré" value={String(stats?.totalPhones ?? 0)} />
               </div>
