@@ -52,8 +52,8 @@ function eur(n: number) {
 
 const FILTERS = [
   { key: "all" as const, label: "Tous" },
-  { key: "for_sale" as const, label: "En vente" },
   { key: "en_réparation" as const, label: "En réparation" },
+  { key: "for_sale" as const, label: "En vente" },
   { key: "sold" as const, label: "Vendus" },
 ];
 
