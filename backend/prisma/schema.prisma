@@ -159,24 +159,24 @@ model DocumentLine {
 }
 
 model Phone {
-  id            String   @id @default(cuid())
-  brand         String?
-  model         String
-  storage       String?
-  battery       String?
-  imei          String?
-  condition          String
-  damagedComponents  String?
-  photoUrl      String?
-  purchasePrice Float
-  repairPrice   Float    @default(0)
-  resalePrice   Float
-  status        String   @default("for_sale")
-  sellerId      String
-  seller        Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-  documentLines DocumentLine[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                String         @id @default(cuid())
+  brand             String?
+  model             String
+  storage           String?
+  battery           String?
+  imei              String?
+  condition         String
+  damagedComponents String?
+  photoUrl          String?
+  purchasePrice     Float
+  repairPrice       Float          @default(0)
+  resalePrice       Float
+  status            String         @default("for_sale")
+  sellerId          String
+  seller            Seller         @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  documentLines     DocumentLine[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 }
 
 // Grille tarifaire — prix des composants à remplacer (réparation).
