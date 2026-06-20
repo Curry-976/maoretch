@@ -54,9 +54,9 @@ function eur(n: number) {
 const FILTERS = [
   { key: "all" as const, label: "Tous" },
   { key: "en_réparation" as const, label: "En réparation" },
-  { key: "hs" as const, label: "HS" },
   { key: "for_sale" as const, label: "En vente" },
   { key: "sold" as const, label: "Vendus" },
+  { key: "hs" as const, label: "HS" },
 ];
 
 export default function Phones() {
