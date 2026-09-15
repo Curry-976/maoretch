@@ -1,0 +1,38 @@
+# MaoreTech — déploiement VPS (remplace Railway)
+# App Hono (sert le webapp React) + Caddy en reverse proxy HTTPS.
+# Lancer : docker compose up -d --build
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # La SQLite vit sur le volume persistant db-data monté en /data
+      - DATABASE_URL=file:/data/maoretech.db
+      - PORT=3000
+    volumes:
+      - db-data:/data
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file: .env
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+
+volumes:
+  db-data:
+  caddy-data:
+  caddy-config:

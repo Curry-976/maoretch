@@ -6,10 +6,6 @@ import { env } from "./env";
 
 const isProd = process.env.NODE_ENV === "production";
 
-const railwayPublic = process.env.RAILWAY_PUBLIC_DOMAIN
-  ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
-  : undefined;
-
 const stripSlash = (u?: string) => u?.replace(/\/$/, "");
 
 const trustedOrigins = Array.from(
@@ -17,9 +13,7 @@ const trustedOrigins = Array.from(
     [
       "http://localhost:*",
       "http://127.0.0.1:*",
-      "https://*.up.railway.app",
       stripSlash(env.BACKEND_URL),
-      stripSlash(railwayPublic),
     ].filter((v): v is string => Boolean(v)),
   ),
 );
