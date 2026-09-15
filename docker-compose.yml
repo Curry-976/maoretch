@@ -18,8 +18,8 @@ services:
       - db-data:/data
     ports:
       # Exposé seulement en local : nginx (sur l'hôte) fait le reverse proxy.
-      # Port hôte 3001 car 3000 est déjà pris par un autre site du VPS.
-      - "127.0.0.1:3001:3000"
+      # Port hôte 3005 (3000 et 3001 déjà pris par d'autres sites du VPS).
+      - "127.0.0.1:3005:3000"
 
 volumes:
   db-data:
