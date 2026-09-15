@@ -1,9 +1,0 @@
-# Reverse proxy Caddy.
-#
-# Sans domaine : SITE_ADDRESS vaut ":80" (défaut) → sert en HTTP sur l'IP du VPS.
-# Avec un domaine : mets SITE_ADDRESS=mondomaine.com dans .env
-#   → Caddy obtient tout seul un certificat HTTPS (Let's Encrypt) et redirige HTTP→HTTPS.
-
-{$SITE_ADDRESS::80} {
-	reverse_proxy app:3000
-}

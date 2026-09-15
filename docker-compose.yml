@@ -1,5 +1,6 @@
-# MaoreTech — déploiement VPS (remplace Railway)
-# App Hono (sert le webapp React) + Caddy en reverse proxy HTTPS.
+# MaoreTech — déploiement VPS derrière un nginx existant.
+# L'app écoute uniquement en local (127.0.0.1:3000) ; le nginx du serveur
+# lui transmet le trafic (voir deploy/nginx-maoretech.conf).
 # Lancer : docker compose up -d --build
 
 services:
@@ -15,24 +16,9 @@ services:
       - PORT=3000
     volumes:
       - db-data:/data
-    expose:
-      - "3000"
-
-  caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-    env_file: .env
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy-data:/data
-      - caddy-config:/config
-    depends_on:
-      - app
+      # Exposé seulement en local : nginx (sur l'hôte) fait le reverse proxy.
+      - "127.0.0.1:3000:3000"
 
 volumes:
   db-data:
-  caddy-data:
-  caddy-config:
