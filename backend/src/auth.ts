@@ -4,9 +4,11 @@ import { admin } from "better-auth/plugins";
 import { prisma } from "./prisma";
 import { env } from "./env";
 
-const isProd = process.env.NODE_ENV === "production";
-
 const stripSlash = (u?: string) => u?.replace(/\/$/, "");
+
+// Cookies "secure" seulement si on sert en HTTPS (sinon le navigateur les jette
+// en HTTP → connexion qui "boucle" sur la page de login).
+const isHttps = (stripSlash(env.BACKEND_URL) ?? "").startsWith("https://");
 
 const trustedOrigins = Array.from(
   new Set(
@@ -46,7 +48,7 @@ export const auth = betterAuth({
     trustedProxyHeaders: true,
     defaultCookieAttributes: {
       sameSite: "lax",
-      secure: isProd,
+      secure: isHttps,
     },
   },
 });
