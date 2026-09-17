@@ -21,7 +21,7 @@ const trustedOrigins = Array.from(
 );
 
 export const auth = betterAuth({
-  database: prismaAdapter(prisma, { provider: "sqlite" }),
+  database: prismaAdapter(prisma, { provider: "postgresql" }),
   secret: env.BETTER_AUTH_SECRET,
   baseURL: stripSlash(env.BACKEND_URL),
   trustedOrigins,

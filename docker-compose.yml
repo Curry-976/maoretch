@@ -1,5 +1,6 @@
 # MaoreTech — déploiement VPS derrière un nginx existant.
-# L'app écoute uniquement en local (127.0.0.1:3000) ; le nginx du serveur
+# Base de données : Postgres hébergé sur Neon (DATABASE_URL dans .env).
+# L'app écoute uniquement en local (127.0.0.1:3005) ; le nginx du serveur
 # lui transmet le trafic (voir deploy/nginx-maoretech.conf).
 # Lancer : docker compose up -d --build
 
@@ -11,15 +12,8 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      # La SQLite vit sur le volume persistant db-data monté en /data
-      - DATABASE_URL=file:/data/maoretech.db
       - PORT=3000
-    volumes:
-      - db-data:/data
     ports:
       # Exposé seulement en local : nginx (sur l'hôte) fait le reverse proxy.
       # Port hôte 3005 (3000 et 3001 déjà pris par d'autres sites du VPS).
       - "127.0.0.1:3005:3000"
-
-volumes:
-  db-data:
